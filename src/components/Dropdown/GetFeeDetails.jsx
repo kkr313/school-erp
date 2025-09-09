@@ -1,8 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { Box, Checkbox, Chip, FormControl } from "@mui/material";
+import { 
+  Box, 
+  Checkbox, 
+  Chip, 
+  FormControl, 
+  Autocomplete, 
+  TextField,
+  Typography 
+} from "@mui/material";
 import { Clear, ArrowDropDown } from "@mui/icons-material";
 import { useTheme } from "../../context/ThemeContext";
-import FilledAutocomplete from "../../utils/FilledAutocomplete";
 import { useApi } from "../../utils/useApi";
 
 const GetFeeDetails = ({ admissionId, onMonthsChange, onPrevDues }) => {
@@ -69,82 +76,86 @@ const GetFeeDetails = ({ admissionId, onMonthsChange, onPrevDues }) => {
       }
     }
   };
-
   return (
-    <Box sx={{ mt: 0 }}>
-      <FormControl fullWidth>
-        <FilledAutocomplete
-          multiple
-          disableCloseOnSelect
-          label="Select Month(s)"
-          placeholder="Choose months"
-          options={months}
-          value={selectedMonths}
-          onChange={(event, newValue, reason, details) => {
-            if (details?.option) {
-              handleMonthClick(details.option);
+    <Box sx={{ mb: 2 }}>
+      <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
+        Select Fee Month(s)
+      </Typography>
+      <Autocomplete
+        multiple
+        size="small"
+        options={months}
+        value={selectedMonths}
+        onChange={(event, newValue) => {
+          if (newValue.length > 0) {
+            // Auto-select consecutive months up to the last selected
+            const lastSelected = newValue[newValue.length - 1];
+            const index = months.findIndex((m) => m.value === lastSelected.value);
+            if (index !== -1) {
+              const consecutive = months.slice(0, index + 1);
+              setSelectedMonths(consecutive);
+              if (typeof onMonthsChange === "function") {
+                onMonthsChange(consecutive);
+              }
             }
-          }}
-          getOptionLabel={(option) => option?.label || ""}
-          isOptionEqualToValue={(opt, val) => opt.value === val.value}
-          popupIcon={<ArrowDropDown sx={{ color: fontColor.paper }} />}
-          clearIcon={<Clear sx={{ color: fontColor.paper }} />}
-          renderTags={(value, getTagProps) => {
-            if (value.length <= 3) {
-              return value.map((option, index) => (
-                <Chip
-                  {...getTagProps({ index })}
-                  key={option.value}
-                  label={option.label}
-                  size="small"
-                  sx={
-                    theme.paperBg === "#ffffff" // ✅ agar light theme hai (white bg)
-                      ? {} // default style rakho
-                      : {
-                          backgroundColor: theme.paperBg,
-                          color: fontColor.paper,
-                          border: `1px solid ${fontColor.paper}`,
-                          "& .MuiChip-deleteIcon": {
-                            color: fontColor.paper,
-                          },
-                        }
-                  }
-                />
-              ));
-            } else {
-              const first = value[0]?.label;
-              const last = value[value.length - 1]?.label;
-              return [
-                <Chip
-                  key="range"
-                  label={`${first} to ${last}`}
-                  sx={
-                    theme.paperBg === "#ffffff"
-                      ? {}
-                      : {
-                          backgroundColor: theme.paperBg,
-                          color: fontColor.paper,
-                          border: `1px solid ${fontColor.paper}`,
-                        }
-                  }
-                />,
-              ];
-            }
-          }}
-          renderOption={(props, option, { selected }) => (
-            <li
-              {...props}
-              key={option.value}
-              onClick={() => handleMonthClick(option)}
-            >
-              <Checkbox
-                checked={selectedMonths.some((m) => m.value === option.value)}
+          } else {
+            setSelectedMonths([]);
+            if (typeof onMonthsChange === "function") onMonthsChange([]);
+          }
+        }}
+        getOptionLabel={(option) => `${option.label} (₹${option.amount})`}
+        isOptionEqualToValue={(opt, val) => opt.value === val.value}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            placeholder="Select months for fee collection"
+            variant="outlined"
+          />
+        )}
+        renderTags={(value, getTagProps) => {
+          if (value.length <= 2) {
+            return value.map((option, index) => (
+              <Chip
+                {...getTagProps({ index })}
+                key={option.value}
+                label={`${option.label} (₹${option.amount})`}
+                size="small"
+                color="primary"
+                variant="outlined"
               />
-              {option.label} ({option.amount})
-            </li>
-          )}
-        />
-      </FormControl>
+            ));
+          } else {
+            const first = value[0]?.label;
+            const last = value[value.length - 1]?.label;
+            const totalAmount = value.reduce((sum, month) => sum + month.amount, 0);
+            return [
+              <Chip
+                key="range"
+                label={`${first} to ${last} (₹${totalAmount})`}
+                size="small"
+                color="primary"
+                variant="outlined"
+              />,
+            ];
+          }
+        }}
+        renderOption={(props, option, { selected }) => (
+          <Box component="li" {...props}>
+            <Checkbox
+              checked={selectedMonths.some((m) => m.value === option.value)}
+              size="small"
+            />
+            <Box sx={{ ml: 1 }}>
+              <Typography variant="body2">
+                {option.label}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                ₹{option.amount}
+              </Typography>
+            </Box>
+          </Box>
+        )}
+      />
     </Box>
   );
 };

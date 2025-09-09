@@ -2,9 +2,6 @@ import React, { useState, useEffect } from "react";
 import {
   Box,
   TextField,
-  List,
-  ListItem,
-  ListItemText,
   Paper,
   Typography,
   CircularProgress,
@@ -17,15 +14,21 @@ import {
   Snackbar,
   Alert,
   TableContainer,
+  Card,
+  CardContent,
+  Grid,
+  Divider,
+  Chip,
+  InputAdornment,
+  List,
+  ListItemButton,
+  ListItemText,
 } from "@mui/material";
+import { Search, Person, Receipt, Payment } from "@mui/icons-material";
 import { useApi } from "../../utils/useApi";
 import GetFeeDetails from "../Dropdown/GetFeeDetails";
 import { useTheme } from "../../context/ThemeContext";
-import FilledTextField from "../../utils/FilledTextField";
 import CustomBreadcrumb from "../../utils/CustomBreadcrumb";
-import SubHeaderLabel from "../Design/SubHeaderLabel";
-import SearchIcon from "@mui/icons-material/Search";
-import { InputAdornment } from "@mui/material";
 
 const DuesCollection = () => {
   const [searchText, setSearchText] = useState("");
@@ -42,10 +45,8 @@ const DuesCollection = () => {
   const { callApi, loading, error } = useApi();
   const [successMsg, setSuccessMsg] = useState(false);
 
-  // ✅ ThemeContext
   const { theme, fontColor } = useTheme();
 
-  // ✅ Modal states
   const [fine, setFine] = useState(0);
   const [concession, setConcession] = useState(0);
   const [paidAmount, setPaidAmount] = useState(0);
@@ -57,7 +58,13 @@ const DuesCollection = () => {
     paidAmount: "",
   });
 
-  // ✅ Fetch all students
+  // currency formatter
+  const formatAmount = (val) =>
+    new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 }).format(
+      Number(val || 0)
+    );
+
+  // Fetch students with dues
   useEffect(() => {
     const fetchStudents = async () => {
       const data = await callApi("/api/GetStudents/GetFilterDuesFeesStudents", {
@@ -65,13 +72,12 @@ const DuesCollection = () => {
       });
       if (data) {
         setStudents(data);
-        setFilteredStudents(data);
       }
     };
     fetchStudents();
   }, [callApi]);
 
-  // ✅ Filter students
+  // Filter students
   useEffect(() => {
     if (searchText.trim() === "") {
       setFilteredStudents([]);
@@ -104,7 +110,7 @@ const DuesCollection = () => {
   const fetchReceiptNumber = async (admissionId) => {
     const data = await callApi(
       "/api/MonthlyBillingFees/GetBillingReceiptNumber",
-      { admissionId } // ✅ Send correct admissionId
+      { admissionId }
     );
     if (data && data.receiptNumber) {
       setReceiptNumber(data.receiptNumber);
@@ -113,40 +119,11 @@ const DuesCollection = () => {
     }
   };
 
-  const textFieldStyles = {
-    "& .MuiOutlinedInput-root": {
-      "& fieldset": { borderColor: fontColor.paper },
-      "&:hover fieldset": { borderColor: fontColor.paper },
-      "&.Mui-focused fieldset": { borderColor: fontColor.paper },
-
-      // ✅ Disabled ke liye
-      "&.Mui-disabled": {
-        "& fieldset": { borderColor: fontColor.paper, borderStyle: "dashed" },
-      },
-    },
-    "& .MuiInputLabel-root": { color: fontColor.paper },
-    "& .MuiInputLabel-root.Mui-disabled": { color: fontColor.paper },
-    "& .MuiFormHelperText-root": { color: "red" },
-    input: { color: fontColor.paper },
-    "& input.Mui-disabled": {
-      color: fontColor.paper,
-      WebkitTextFillColor: fontColor.paper,
-    },
-    "& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button": {
-      WebkitAppearance: "none",
-      margin: 0,
-    },
-    "& input[type=number]": {
-      MozAppearance: "textfield", // Firefox
-    },
-  };
-
   const validateForm = () => {
     const newErrors = {};
 
-    // Paid Amount Validations
     if (!paidAmount || Number(paidAmount) === 0) {
-      newErrors.paidAmount = "Paid Amount must greater than 0";
+      newErrors.paidAmount = "Paid Amount must be greater than 0";
     } else if (prevDues && Number(paidAmount) < Number(prevDues.dueAmount)) {
       newErrors.paidAmount = `Paid Amount should be ≥ Prev Dues (${prevDues.dueAmount})`;
     }
@@ -155,7 +132,7 @@ const DuesCollection = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  // ✅ group by headName
+  // Group fees by headName
   const groupedFees = {};
   selectedMonthsData.forEach((month) => {
     month.details.forEach((fee) => {
@@ -210,740 +187,532 @@ const DuesCollection = () => {
       duesAmount: dues,
     };
 
-    console.log("✅ Saved Payload:", payload);
+    console.log("Saved Payload:", payload);
     setSuccessMsg(true);
   };
 
   return (
-    <>
-      {/* Breadcrumb section - visually separated, no background wrapper */}
-      <Box sx={{ width: "100%", mb: 0, pb: 0 }}>
-        <CustomBreadcrumb
-          title="Dues Collection"
-          links={[
-            { label: "Dashboard", href: "/dashboard" },
-            { label: "Collection", href: "/collection" },
-          ]}
-          animated={true}
-        />
-      </Box>
+    <Box sx={{ p: { xs: 2, sm: 3 }, maxWidth: 1200, mx: "auto" }}>
+      <CustomBreadcrumb
+        title="Dues Collection"
+        links={[
+          { label: "Dashboard", href: "/dashboard" },
+          { label: "Collection", href: "/collection" },
+        ]}
+      />
 
-      {/* Main module section - full width, no background color wrapper */}
-      <Box
+      {/* Outstanding Dues Note */}
+      <Card
         sx={{
-          width: "100%",
-          px: { xs: 0, sm: 0 },
-          pt: 0,
-          mt: 0,
+          mb: 2,
+          boxShadow: 0,
+          border: "1px solid",
+          borderColor: "warning.light",
+          bgcolor: "warning.50",
         }}
       >
-        {/* Compact Search Box */}
-        <Box
-          sx={{
-            width: { xs: "100%", sm: "60%", md: "40%" },
-            mx: { xs: 0, sm: 0 },
-            mb: 3,
-            position: "relative",
-          }}
-        >
-          <Box
-            sx={{
-              position: "relative",
-              background: "linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)",
-              borderRadius: 3,
-              boxShadow:
-                "0 4px 20px -2px rgba(99, 102, 241, 0.08), 0 2px 8px -2px rgba(99, 102, 241, 0.04)",
-              border: "1px solid rgba(226, 232, 240, 0.8)",
-              transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-              "&:hover": {
-                boxShadow:
-                  "0 8px 30px -4px rgba(99, 102, 241, 0.12), 0 4px 16px -4px rgba(99, 102, 241, 0.08)",
-                border: "1px solid rgba(99, 102, 241, 0.3)",
-                transform: "translateY(-1px)",
-              },
-              "&:focus-within": {
-                boxShadow:
-                  "0 8px 30px -4px rgba(99, 102, 241, 0.15), 0 0 0 3px rgba(99, 102, 241, 0.1)",
-                border: "1px solid #6366f1",
-                transform: "translateY(-1px)",
-              },
-            }}
+        <CardContent sx={{ py: 1.5 }}>
+          <Typography
+            variant="body2"
+            sx={{ fontWeight: 600, color: "warning.dark" }}
           >
+            Outstanding dues collection
+          </Typography>
+          <Typography variant="caption" color="text.secondary">
+            Search students with pending dues and collect payments.
+          </Typography>
+        </CardContent>
+      </Card>
+
+      {/* Search Section */}
+      <Card
+        sx={{
+          mb: 2,
+          boxShadow: 0,
+          border: "1px solid",
+          borderColor: "divider",
+        }}
+      >
+        <CardContent sx={{ py: 1.5 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
             <TextField
               fullWidth
-              placeholder="Search by Name / Admission No / Father Name"
-              variant="outlined"
-              size="small"
+              placeholder="Search by name, admission no, or father's name"
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
+              variant="outlined"
+              size="small"
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <SearchIcon
-                      sx={{
-                        color: "#6366f1",
-                        fontSize: "1.4rem",
-                        filter:
-                          "drop-shadow(0 1px 2px rgba(99, 102, 241, 0.2))",
-                      }}
-                    />
+                    <Search sx={{ color: "text.secondary", fontSize: 20 }} />
                   </InputAdornment>
                 ),
-                sx: {
-                  height: 54,
-                  fontSize: "1.05rem",
-                  fontWeight: 500,
-                  color: "#1e293b",
-                  letterSpacing: "0.3px",
-                  "& fieldset": {
-                    border: "none",
-                  },
-                  "&:hover fieldset": {
-                    border: "none",
-                  },
-                  "&.Mui-focused fieldset": {
-                    border: "none",
-                  },
-                  "& input": {
-                    padding: "16px 12px",
-                    "&::placeholder": {
-                      color: "#64748b",
-                      opacity: 0.8,
-                      fontWeight: 500,
-                    },
-                  },
-                },
+                endAdornment: searchText && (
+                  <InputAdornment position="end">
+                    <Button
+                      size="small"
+                      onClick={() => setSearchText("")}
+                      sx={{ minWidth: "auto", p: 0.5 }}
+                    >
+                      ×
+                    </Button>
+                  </InputAdornment>
+                ),
               }}
               sx={{
                 "& .MuiOutlinedInput-root": {
                   borderRadius: 3,
-                  background: "transparent",
+                  bgcolor: "rgba(255,255,255,0.7)",
+                  backdropFilter: "blur(8px)",
+                  boxShadow: "0 6px 18px rgba(0,0,0,0.06)",
                 },
               }}
             />
           </Box>
-        </Box>
 
-        {/* Results + Details inside Paper */}
-        {searchText.trim() !== "" && (
-          <Paper
-            elevation={4}
-            sx={{
-              maxHeight: "70vh",
-              overflow: "auto",
-              mb: 2,
-              mt: -3,
-              background: "linear-gradient(90deg, #f5f5f5 60%, #e0e7ff 100%)",
-              borderRadius: 2,
-              boxShadow: "0 2px 12px rgba(59,130,246,0.10)",
-              transition: "box-shadow 0.3s",
-            }}
-            className="custom-scrollbar animate-slideIn"
-          >
-            {loading ? (
-              <Box sx={{ p: 2, textAlign: "center" }}>
-                <CircularProgress sx={{ color: "#6366f1" }} />
-              </Box>
-            ) : error ? (
-              <Typography color="error" sx={{ p: 2 }}>
-                {error}
-              </Typography>
-            ) : (
-              <List>
-                {filteredStudents.length > 0 ? (
-                  filteredStudents.map((student, index) => (
-                    <ListItem
-                      button
-                      key={student.id}
-                      onClick={() => handleSelectStudent(student)}
-                      sx={{
-                        borderBottom:
-                          index !== filteredStudents.length - 1
-                            ? "1px solid #e0e0e0"
-                            : "none",
-                        transition: "background 0.2s",
-                        "&:hover": {
-                          background:
-                            "linear-gradient(90deg, #e0e7ff 0%, #f8fafc 100%)",
-                        },
-                        borderRadius: 2,
-                        boxShadow: "0 1px 4px rgba(59,130,246,0.04)",
-                        mb: 1,
-                      }}
-                    >
-                      <ListItemText
-                        primary={
-                          <>
-                            <span style={{ color: "#6366f1", fontWeight: 600 }}>
-                              {student.rollNo} / {student.admissionNo}
-                            </span>
-                            {` - `}
-                            <span style={{ color: "#0ea5e9", fontWeight: 600 }}>
-                              {student.studentName}
-                            </span>
-                            {` S/O `}
-                            <span style={{ color: "#334155" }}>
-                              {student.fatherName}
-                            </span>
-                          </>
-                        }
-                        secondary={
-                          student.duesDescription ? (
-                            <>
-                              <span
-                                style={{ color: "#ef4444", fontWeight: 500 }}
-                              >
-                                Dues: {student.duesDescription}
-                              </span>
-                            </>
-                          ) : null
-                        }
-                      />
-                    </ListItem>
-                  ))
-                ) : (
-                  <Typography sx={{ p: 2 }}>No students found</Typography>
-                )}
-              </List>
-            )}
-          </Paper>
-        )}
-
-        {/* Show FeeDetails Component when student selected */}
-        {selectedStudent && (
-          <Paper
-            elevation={8}
-            sx={{
-              p: { xs: 1.5, sm: 3 },
-              py: 0,
-              mt: 2,
-              mb: 5,
-              background: "rgba(255,255,255,0.85)",
-              borderRadius: 4,
-              boxShadow: "0 8px 32px 0 rgba(31,38,135,0.10)",
-              transition: "box-shadow 0.3s",
-            }}
-            className="glass animate-float"
-          >
+          {/* Search Results */}
+          {searchText.trim() && (
             <Box
               sx={{
-                display: "grid",
-                gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, // responsive 1-2 layout
-                gap: 3,
-                alignItems: "flex-start",
-                justifyContent: "center",
-                width: "100%",
+                mt: 1.5,
+                maxHeight: 320,
+                overflow: "auto",
+                border: "1px solid",
+                borderColor: "divider",
+                borderRadius: 2,
+                p: 0.5,
+                bgcolor: "rgba(255,255,255,0.5)",
+                backdropFilter: "blur(6px)",
               }}
             >
-              {/* ✅ Left: Student Details */}
-              <Box
-                sx={{
-                  p: { xs: 1, sm: 2 },
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  borderBottom: { xs: "1px solid grey", sm: "none" },
-                  pb: 1,
-                }}
-              >
-                <Box>
-                  <SubHeaderLabel title="Student Details" theme={theme} />
+              {loading ? (
+                <Box sx={{ display: "flex", justifyContent: "center", p: 2 }}>
+                  <CircularProgress size={20} />
                 </Box>
+              ) : filteredStudents.length > 0 ? (
+                <List dense disablePadding>
+                  {filteredStudents.map((student) => (
+                    <ListItemButton
+                      key={student.id}
+                      dense
+                      onClick={() => handleSelectStudent(student)}
+                      sx={{
+                        my: 0.5,
+                        py: 1,
+                        px: 1.25,
+                        borderRadius: 2,
+                        border: "1px solid",
+                        borderColor: "divider",
+                        bgcolor: "background.paper",
+                        '&:hover': { bgcolor: "action.hover" },
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 2,
+                      }}
+                    >
+                      {/* Left badges: Class/Section, Admission No, Roll No */}
+                      <Box sx={{ minWidth: 190, display: "flex", flexDirection: "column", gap: 0.5 }}>
+                        <Chip
+                          label={`${student.className}-${student.section}`}
+                          size="small"
+                          variant="outlined"
+                          sx={{
+                            bgcolor: "rgba(255,255,255,0.7)",
+                            backdropFilter: "blur(6px)",
+                            borderColor: "divider",
+                            fontWeight: 600,
+                            maxWidth: "fit-content",
+                          }}
+                        />
+                        <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap" }}>
+                          <Chip
+                            label={`Admission No. ${student.admissionNo}`}
+                            size="small"
+                            variant="outlined"
+                            sx={{ bgcolor: "rgba(255,255,255,0.7)", backdropFilter: "blur(6px)", borderColor: "divider" }}
+                          />
+                          <Chip
+                            label={`Roll No. ${student.rollNo}`}
+                            size="small"
+                            variant="outlined"
+                            sx={{ bgcolor: "rgba(255,255,255,0.7)", backdropFilter: "blur(6px)", borderColor: "divider" }}
+                          />
+                        </Box>
+                      </Box>
+
+                      {/* Center: Name and Father name (chip) */}
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Typography
+                          variant="body2"
+                          sx={{ fontWeight: 700, mb: 0.5, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}
+                        >
+                          {student.studentName}
+                        </Typography>
+                        <Chip
+                          label={`Father Name - ${student.fatherName}`}
+                          size="small"
+                          sx={{
+                            bgcolor: "rgba(255,255,255,0.7)",
+                            backdropFilter: "blur(6px)",
+                            border: "1px solid",
+                            borderColor: "divider",
+                          }}
+                        />
+                      </Box>
+
+                      {/* Right: Dues amount */}
+                      {student.duesDescription ? (
+                        <Chip
+                          label={`₹${formatAmount(student.duesDescription)}`}
+                          color="error"
+                          size="small"
+                          sx={{ ml: "auto" }}
+                        />
+                      ) : null}
+                    </ListItemButton>
+                  ))}
+                </List>
+              ) : (
+                <Typography
+                  color="text.secondary"
+                  sx={{ textAlign: "center", p: 1.5, fontSize: 13 }}
+                >
+                  No students with dues found
+                </Typography>
+              )}
+            </Box>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Selected Student Details */}
+      {selectedStudent && (
+        <Grid container spacing={2}>
+          {/* Student Information */}
+          <Grid item xs={12} md={5}>
+            <Card sx={{ border: "1px solid", borderColor: "divider" }}>
+              <CardContent sx={{ p: 2 }}>
                 <Box
                   sx={{
-                    display: "grid",
-                    gridTemplateColumns: "130px 20px 1fr",
-                    gap: 1,
-                    color: fontColor.paper,
+                    display: "flex",
                     alignItems: "center",
-                    mt: 1,
+                    gap: 1,
+                    mb: 1.5,
                   }}
                 >
-                  {/* Admission No */}
-                  <Typography
-                    sx={{
-                      display: { xs: "none", sm: "block", fontWeight: "bold" },
-                    }}
-                  >
-                    Admission No
+                  <Person color="primary" fontSize="small" />
+                  <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                    Student Information
                   </Typography>
-                  <Typography
-                    sx={{
-                      display: { xs: "none", sm: "block", fontWeight: "bold" },
-                    }}
-                  >
-                    :
-                  </Typography>
-                  <Typography sx={{ display: { xs: "none", sm: "block" } }}>
-                    {selectedStudent.admissionNo}
-                  </Typography>
-
-                  {/* Roll No */}
-                  <Typography
-                    sx={{
-                      display: { xs: "none", sm: "block", fontWeight: "bold" },
-                    }}
-                  >
-                    Roll No
-                  </Typography>
-                  <Typography
-                    sx={{
-                      display: { xs: "none", sm: "block", fontWeight: "bold" },
-                    }}
-                  >
-                    :
-                  </Typography>
-                  <Typography sx={{ display: { xs: "none", sm: "block" } }}>
-                    {selectedStudent.rollNo}
-                  </Typography>
-
-                  {/* Mobile combined Adm/Roll */}
-                  <Typography
-                    sx={{
-                      display: { xs: "block", sm: "none", fontWeight: "bold" },
-                    }}
-                  >
-                    Adm/Roll
-                  </Typography>
-                  <Typography
-                    sx={{
-                      display: { xs: "block", sm: "none", fontWeight: "bold" },
-                    }}
-                  >
-                    :
-                  </Typography>
-                  <Typography sx={{ display: { xs: "block", sm: "none" } }}>
-                    {selectedStudent.admissionNo} / {selectedStudent.rollNo}
-                  </Typography>
-
-                  {/* Class / Section */}
-                  <Typography sx={{ fontWeight: "bold" }}>
-                    Class / Section
-                  </Typography>
-                  <Typography sx={{ fontWeight: "bold" }}>:</Typography>
-                  <Typography>
-                    {selectedStudent.className} - {selectedStudent.section}
-                  </Typography>
-
-                  {/* Student Name */}
-                  <Typography sx={{ fontWeight: "bold" }}>
-                    Student Name
-                  </Typography>
-                  <Typography sx={{ fontWeight: "bold" }}>:</Typography>
-                  <Typography>{selectedStudent.studentName}</Typography>
-
-                  {/* Father's Name */}
-                  <Typography sx={{ fontWeight: "bold" }}>
-                    Father's Name
-                  </Typography>
-                  <Typography sx={{ fontWeight: "bold" }}>:</Typography>
-                  <Typography>{selectedStudent.fatherName}</Typography>
-
-                  {/* Mother's Name */}
-                  <Typography sx={{ fontWeight: "bold" }}>
-                    Mother's Name
-                  </Typography>
-                  <Typography sx={{ fontWeight: "bold" }}>:</Typography>
-                  <Typography>{selectedStudent.motherName}</Typography>
                 </Box>
-              </Box>
 
-              {/* ✅ Right: Fee Details */}
-              <Box
-                sx={{
-                  p: { xs: 1, sm: 2 },
-                  borderLeft: { xs: "none", sm: "1px solid grey" },
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                }}
-              >
+                <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                    <Typography variant="caption" color="text.secondary">
+                      Name
+                    </Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                      {selectedStudent.studentName}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                    <Typography variant="caption" color="text.secondary">
+                      Admission No
+                    </Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                      {selectedStudent.admissionNo}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                    <Typography variant="caption" color="text.secondary">
+                      Roll No
+                    </Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                      {selectedStudent.rollNo}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                    <Typography variant="caption" color="text.secondary">
+                      Class
+                    </Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                      {selectedStudent.className}-{selectedStudent.section}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                    <Typography variant="caption" color="text.secondary">
+                      Father's Name
+                    </Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                      {selectedStudent.fatherName}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                    <Typography variant="caption" color="text.secondary">
+                      Mother's Name
+                    </Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                      {selectedStudent.motherName}
+                    </Typography>
+                  </Box>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Dues Collection */}
+          <Grid item xs={12} md={7}>
+            <Card sx={{ border: "1px solid", borderColor: "divider" }}>
+              <CardContent sx={{ p: 2 }}>
                 <Box
                   sx={{
-                    width: { xs: "100%", sm: "65%" },
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                    mb: 1.5,
                   }}
                 >
-                  <Box
-                    sx={{
-                      textAlign: "center",
-                    }}
-                  >
-                    <SubHeaderLabel title="Fee Details" theme={theme} />
-                  </Box>
+                  <Payment color="primary" fontSize="small" />
+                  <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                    Dues Collection
+                  </Typography>
+                </Box>
 
-                  {/* ✅ Receipt No + Receipt Date */}
-                  <Box
-                    sx={{
-                      display: "grid",
-                      gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
-                      gap: 2,
-                      mb: 2,
-                      mt: 1.5,
-                    }}
-                  >
-                    <Typography>
+                {/* Receipt Details */}
+                <Grid container spacing={1.5} sx={{ mb: 2 }}>
+                  <Grid item xs={6}>
+                    <Typography variant="caption" color="text.secondary">
                       Receipt No: <strong>{receiptNumber}</strong>
                     </Typography>
+                  </Grid>
+                  <Grid item xs={6}>
                     <TextField
                       label="Receipt Date"
                       type="date"
+                      size="small"
+                      fullWidth
                       value={receiptDate}
                       onChange={(e) => setReceiptDate(e.target.value)}
                       InputLabelProps={{ shrink: true }}
-                      size="small"
                       inputProps={{
                         max: new Date().toISOString().split("T")[0],
                       }}
-                      sx={{ ...textFieldStyles }}
                       error={!!errors.receiptDate}
                       helperText={errors.receiptDate}
                     />
-                  </Box>
+                  </Grid>
+                </Grid>
 
-                  {/* ✅ Fee Selection Component */}
-
+                {/* Fee Selection */}
+                <Box sx={{ mb: 2 }}>
                   <GetFeeDetails
                     admissionId={
-                      selectedStudent.admissionId || selectedStudent.id
+                      selectedStudent?.admissionId || selectedStudent?.id
                     }
                     onMonthsChange={setSelectedMonthsData}
                     onPrevDues={setPrevDues}
                   />
-
-                  {(groupedFeesArray.length > 0 || prevDues) && (
-                    <Box sx={{ mt: 2 }}>
-                      <Typography
-                        variant="h6"
-                        sx={{
-                          fontWeight: "bold",
-                          mb: 2,
-                          color: fontColor.paper,
-                        }}
-                      >
-                        {selectedMonthsData.length > 0
-                          ? `Fee Details - ${selectedMonthsData[0]?.label} to ${
-                              selectedMonthsData[selectedMonthsData.length - 1]
-                                ?.label
-                            }`
-                          : "Fee Details"}
-                      </Typography>
-
-                      <TableContainer
-                        component={Paper}
-                        sx={{
-                          backgroundColor: theme.paperBg,
-                          width: "100%",
-                        }}
-                      >
-                        <Table>
-                          <TableHead>
-                            <TableRow
-                              sx={{
-                                backgroundColor: "#f5f5f5",
-                                height: "26px",
-                              }}
-                            >
-                              <TableCell sx={{ px: 1, py: 0.5 }}>
-                                <strong>Head</strong>
-                              </TableCell>
-                              <TableCell sx={{ textAlign: "right", py: 0.5 }}>
-                                <strong>Amount</strong>
-                              </TableCell>
-                            </TableRow>
-                          </TableHead>
-                          <TableBody>
-                            {groupedFeesArray.map((fee, idx) => (
-                              <TableRow key={idx} sx={{ height: "26px" }}>
-                                <TableCell
-                                  sx={{ px: 1, color: fontColor.paper, py: 0 }}
-                                >
-                                  {fee.headName}
-                                </TableCell>
-                                <TableCell
-                                  sx={{
-                                    textAlign: "right",
-                                    color: fontColor.paper,
-                                    py: 0,
-                                  }}
-                                >
-                                  {fee.amount}
-                                </TableCell>
-                              </TableRow>
-                            ))}
-
-                            {prevDues && (
-                              <TableRow sx={{ height: "26px" }}>
-                                <TableCell
-                                  sx={{ px: 1, color: fontColor.paper, py: 0 }}
-                                >
-                                  Previous Dues ( {prevDues.dueDesc} )
-                                </TableCell>
-                                <TableCell
-                                  sx={{
-                                    fontWeight: "bold",
-                                    textAlign: "right",
-                                    py: 0,
-                                    color:
-                                      theme.paperBg === "white" ||
-                                      theme.paperBg === "#ffffff"
-                                        ? "red"
-                                        : fontColor.paper,
-                                  }}
-                                >
-                                  {prevDues.dueAmount}
-                                </TableCell>
-                              </TableRow>
-                            )}
-
-                            <TableRow sx={{ height: "26px" }}>
-                              <TableCell
-                                sx={{ px: 1, color: fontColor.paper, py: 0 }}
-                              >
-                                <strong>Total Billing</strong>
-                              </TableCell>
-                              <TableCell
-                                sx={{
-                                  textAlign: "right",
-                                  color: fontColor.paper,
-                                  py: 0,
-                                }}
-                              >
-                                <strong>{totalBilling}</strong>
-                              </TableCell>
-                            </TableRow>
-                          </TableBody>
-                        </Table>
-                      </TableContainer>
-
-                      {/* ✅ Fine, Concession, Total Payable, Paid, Dues */}
-                      <Box sx={{ mt: 2 }}>
-                        <TableContainer
-                          sx={{ width: "100%", overflowX: "auto" }}
-                        >
-                          <Table size="small">
-                            <TableBody>
-                              {/* Fine */}
-                              <TableRow sx={{ height: "28px" }}>
-                                <TableCell
-                                  sx={{
-                                    px: 1,
-                                    color: fontColor.paper,
-                                    py: 0.5,
-                                  }}
-                                >
-                                  Fine
-                                </TableCell>
-                                <TableCell
-                                  sx={{ px: 1, textAlign: "right", py: 0.5 }}
-                                >
-                                  <TextField
-                                    type="number"
-                                    value={fine}
-                                    onChange={(e) => {
-                                      const value = e.target.value;
-                                      if (
-                                        value === "" ||
-                                        /^\d{0,5}$/.test(value)
-                                      ) {
-                                        setFine(value);
-                                      }
-                                    }}
-                                    size="small"
-                                    sx={{
-                                      ...textFieldStyles,
-                                      "& .MuiInputBase-root": {
-                                        height: 28,
-                                        width: 85,
-                                      },
-
-                                      "& input": { textAlign: "right" }, // ✅ align right
-                                    }}
-                                    error={!!errors.fine}
-                                    helperText={errors.fine}
-                                  />
-                                </TableCell>
-                              </TableRow>
-
-                              {/* Concession */}
-                              <TableRow>
-                                <TableCell
-                                  sx={{ px: 1, color: fontColor.paper }}
-                                >
-                                  Concession
-                                </TableCell>
-                                <TableCell sx={{ px: 1, textAlign: "right" }}>
-                                  <TextField
-                                    type="number"
-                                    value={concession}
-                                    onChange={(e) => {
-                                      const value = e.target.value;
-                                      if (
-                                        value === "" ||
-                                        /^\d{0,5}$/.test(value)
-                                      ) {
-                                        setConcession(value);
-                                      }
-                                    }}
-                                    size="small"
-                                    sx={{
-                                      ...textFieldStyles,
-                                      "& .MuiInputBase-root": {
-                                        height: 28,
-                                        width: 85,
-                                      },
-                                      "& input": { textAlign: "right" },
-                                    }}
-                                    error={!!errors.concession}
-                                    helperText={errors.concession}
-                                  />
-                                </TableCell>
-                              </TableRow>
-
-                              {/* Total Payable */}
-                              <TableRow>
-                                <TableCell
-                                  sx={{ px: 1, color: fontColor.paper }}
-                                >
-                                  Total Payable
-                                </TableCell>
-                                <TableCell sx={{ px: 1, textAlign: "right" }}>
-                                  <TextField
-                                    value={totalPayable}
-                                    size="small"
-                                    disabled
-                                    sx={{
-                                      ...textFieldStyles,
-                                      "& .MuiInputBase-root": {
-                                        height: 28,
-                                        width: 85,
-                                      },
-                                      "& input": { textAlign: "right" },
-                                    }}
-                                  />
-                                </TableCell>
-                              </TableRow>
-
-                              {/* Paid Amount */}
-                              <TableRow>
-                                <TableCell
-                                  sx={{ px: 1, color: fontColor.paper }}
-                                >
-                                  Paid Amount
-                                </TableCell>
-                                <TableCell sx={{ px: 1, textAlign: "right" }}>
-                                  <TextField
-                                    type="number"
-                                    value={paidAmount}
-                                    onChange={(e) => {
-                                      let value = e.target.value;
-                                      if (!/^\d{0,6}$/.test(value)) return;
-                                      if (Number(value) > totalPayable)
-                                        value = totalPayable.toString();
-                                      setPaidAmount(value);
-
-                                      // Clear error on input
-                                      if (errors.paidAmount) {
-                                        setErrors((prevErrors) => ({
-                                          ...prevErrors,
-                                          paidAmount: "",
-                                        }));
-                                      }
-                                    }}
-                                    size="small"
-                                    sx={{
-                                      ...textFieldStyles,
-                                      "& .MuiInputBase-root": {
-                                        height: 28,
-                                        width: 85,
-                                      },
-                                      "& input": { textAlign: "right" },
-                                    }}
-                                    error={!!errors.paidAmount}
-                                    helperText={errors.paidAmount}
-                                  />
-                                </TableCell>
-                              </TableRow>
-
-                              {/* Dues */}
-                              <TableRow>
-                                <TableCell
-                                  sx={{ px: 1, color: fontColor.paper }}
-                                >
-                                  Dues
-                                </TableCell>
-                                <TableCell sx={{ px: 1, textAlign: "right" }}>
-                                  <TextField
-                                    value={dues}
-                                    size="small"
-                                    disabled
-                                    sx={{
-                                      ...textFieldStyles,
-                                      "& .MuiInputBase-root": {
-                                        height: 28,
-                                        width: 85,
-                                      },
-                                      "& input": { textAlign: "right" },
-                                    }}
-                                  />
-                                </TableCell>
-                              </TableRow>
-                            </TableBody>
-                          </Table>
-                        </TableContainer>
-                      </Box>
-
-                      {/* Save Button */}
-                      <Box sx={{ textAlign: "left", mt: 1.5 }}>
-                        <Button
-                          variant="contained"
-                          color="primary"
-                          size="small"
-                          onClick={handleSave}
-                          sx={{
-                            px: 3,
-                            py: 0.8,
-                            fontWeight: 500,
-                            fontSize: "0.9rem",
-                            borderRadius: 1.5,
-                            textTransform: "none",
-                          }}
-                        >
-                          Collect Dues
-                        </Button>
-                      </Box>
-                    </Box>
-                  )}
                 </Box>
-              </Box>
-            </Box>
-          </Paper>
-        )}
 
-        {/* Premium Snackbar */}
-        <Snackbar
-          open={successMsg}
-          autoHideDuration={3000}
+                {/* Fee Summary */}
+                {selectedMonthsData.length > 0 && (
+                  <TableContainer
+                    component={Paper}
+                    variant="outlined"
+                    sx={{ mb: 2 }}
+                  >
+                    <Table size="small">
+                      <TableHead>
+                        <TableRow>
+                          <TableCell sx={{ fontWeight: 600 }}>
+                            Description
+                          </TableCell>
+                          <TableCell
+                            align="right"
+                            sx={{ fontWeight: 600 }}
+                          >
+                            Amount
+                          </TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {/* Previous Dues */}
+                        {prevDues && (
+                          <TableRow>
+                            <TableCell>Previous Dues</TableCell>
+                            <TableCell align="right">
+                              ₹{formatAmount(prevDues.dueAmount)}
+                            </TableCell>
+                          </TableRow>
+                        )}
+
+                        {/* Fee Heads */}
+                        {groupedFeesArray.map((fee) => (
+                          <TableRow key={fee.headName}>
+                            <TableCell>{fee.headName}</TableCell>
+                            <TableCell align="right">
+                              ₹{formatAmount(fee.amount)}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+
+                        <TableRow>
+                          <TableCell colSpan={2}>
+                            <Divider />
+                          </TableCell>
+                        </TableRow>
+
+                        {/* Total Billing */}
+                        <TableRow>
+                          <TableCell sx={{ fontWeight: 600 }}>
+                            Total Billing
+                          </TableCell>
+                          <TableCell
+                            align="right"
+                            sx={{ fontWeight: 600 }}
+                          >
+                            ₹{formatAmount(totalBilling)}
+                          </TableCell>
+                        </TableRow>
+
+                        {/* Fine */}
+                        <TableRow>
+                          <TableCell>Fine</TableCell>
+                          <TableCell align="right">
+                            <TextField
+                              type="number"
+                              size="small"
+                              value={fine}
+                              onChange={(e) => setFine(e.target.value)}
+                              sx={{ width: 100 }}
+                              inputProps={{
+                                min: 0,
+                                style: { textAlign: "right" },
+                              }}
+                            />
+                          </TableCell>
+                        </TableRow>
+
+                        {/* Concession */}
+                        <TableRow>
+                          <TableCell>Concession</TableCell>
+                          <TableCell align="right">
+                            <TextField
+                              type="number"
+                              size="small"
+                              value={concession}
+                              onChange={(e) => setConcession(e.target.value)}
+                              sx={{ width: 100 }}
+                              inputProps={{
+                                min: 0,
+                                style: { textAlign: "right" },
+                              }}
+                            />
+                          </TableCell>
+                        </TableRow>
+
+                        {/* Total Payable */}
+                        <TableRow>
+                          <TableCell sx={{ fontWeight: 600 }}>
+                            Total Payable
+                          </TableCell>
+                          <TableCell
+                            align="right"
+                            sx={{ fontWeight: 600 }}
+                          >
+                            ₹{formatAmount(totalPayable)}
+                          </TableCell>
+                        </TableRow>
+
+                        {/* Paid Amount */}
+                        <TableRow>
+                          <TableCell>Paid Amount</TableCell>
+                          <TableCell align="right">
+                            <TextField
+                              type="number"
+                              size="small"
+                              value={paidAmount}
+                              onChange={(e) => {
+                                let value = e.target.value;
+                                if (!/^\d{0,6}$/.test(value)) return;
+                                if (Number(value) > totalPayable)
+                                  value = totalPayable.toString();
+                                setPaidAmount(value);
+                                if (errors.paidAmount)
+                                  setErrors((prev) => ({
+                                    ...prev,
+                                    paidAmount: "",
+                                  }));
+                              }}
+                              sx={{ width: 100 }}
+                              inputProps={{
+                                min: 0,
+                                style: { textAlign: "right" },
+                              }}
+                              error={!!errors.paidAmount}
+                              helperText={errors.paidAmount}
+                            />
+                          </TableCell>
+                        </TableRow>
+
+                        {/* Remaining Dues */}
+                        <TableRow>
+                          <TableCell sx={{ fontWeight: 600 }}>
+                            Remaining Dues
+                          </TableCell>
+                          <TableCell
+                            align="right"
+                            sx={{
+                              fontWeight: 600,
+                              color:
+                                dues > 0 ? "error.main" : "success.main",
+                            }}
+                          >
+                            ₹{formatAmount(dues)}
+                          </TableCell>
+                        </TableRow>
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                )}
+
+                {/* Collect Button */}
+                {selectedMonthsData.length > 0 && (
+                  <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+                    <Button
+                      variant="contained"
+                      onClick={handleSave}
+                      size="medium"
+                      startIcon={<Receipt />}
+                      sx={{ px: 3 }}
+                    >
+                      Collect Payment
+                    </Button>
+                  </Box>
+                )}
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+      )}
+
+      {/* Success Snackbar */}
+      <Snackbar
+        open={successMsg}
+        autoHideDuration={3000}
+        onClose={() => setSuccessMsg(false)}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
           onClose={() => setSuccessMsg(false)}
-          anchorOrigin={{ vertical: "top", horizontal: "center" }}
+          severity="success"
+          sx={{ width: "100%" }}
         >
-          <Alert
-            onClose={() => setSuccessMsg(false)}
-            severity="success"
-            sx={{
-              width: "100%",
-              fontWeight: 600,
-              fontSize: "1.05rem",
-              background: "linear-gradient(90deg, #bbf7d0 0%, #f0fdf4 100%)",
-              color: "#059669",
-              borderRadius: 2,
-              boxShadow: "0 2px 8px rgba(34,197,94,0.10)",
-            }}
-          >
-            Saved Successfully!
-          </Alert>
-        </Snackbar>
-      </Box>
-    </>
+          Dues payment collected successfully!
+        </Alert>
+      </Snackbar>
+    </Box>
   );
 };
 
