@@ -19,12 +19,14 @@ import {
   configItems,
 } from "../utils/globalMenuItems";
 
-const Navbar = ({ mobileOpen, setMobileOpen }) => {  
+const Navbar = ({ mobileOpen, setMobileOpen, onVisibilityChange }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
-  const [searchResults, setSearchResults] = useState([]);
+  const [searchResults, setSearchResults] = useState([]); const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+  const [isHovering, setIsHovering] = useState(false);
 
   const navigate = useNavigate();
   const { setIsAuthenticated } = useAuth();
@@ -53,14 +55,62 @@ const Navbar = ({ mobileOpen, setMobileOpen }) => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
   useEffect(() => {
     if (searchText.trim()) {
       setSearchResults(filterMenuItems(searchText, allMenuItems));
     } else {
       setSearchResults([]);
     }
-  }, [searchText, allMenuItems]);
+  }, [searchText, allMenuItems]);  // Handle scroll behavior for navbar visibility
+  useEffect(() => {
+    let ticking = false;
+
+    const controlNavbar = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          const currentScrollY = window.scrollY;
+          let newVisibility = isVisible;
+          if (currentScrollY < 10) {
+            // Always show navbar when at top
+            newVisibility = true;
+          } else if (currentScrollY > lastScrollY && currentScrollY > 80 && !isHovering) {
+            // Hide navbar when scrolling down after 80px (but not when hovering)
+            newVisibility = false;
+            // Close any open dropdowns when hiding
+            setDropdownOpen(false);
+            setMobileSearchOpen(false);
+          } else if (currentScrollY < lastScrollY || isHovering) {
+            // Show navbar when scrolling up or hovering
+            newVisibility = true;
+          }
+
+          if (newVisibility !== isVisible) {
+            setIsVisible(newVisibility);
+            onVisibilityChange?.(newVisibility);
+          }
+
+          setLastScrollY(currentScrollY);
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    // Show navbar when mouse moves to top of screen
+    const handleMouseMove = (e) => {
+      if (e.clientY <= 50 && !isVisible && window.scrollY > 80) {
+        setIsVisible(true);
+        onVisibilityChange?.(true);
+      }
+    };
+
+    window.addEventListener('scroll', controlNavbar, { passive: true });
+    window.addEventListener('mousemove', handleMouseMove, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', controlNavbar);
+      window.removeEventListener('mousemove', handleMouseMove);
+    };
+  }, [lastScrollY, isVisible, isHovering, onVisibilityChange]);
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -70,24 +120,28 @@ const Navbar = ({ mobileOpen, setMobileOpen }) => {
       document.exitFullscreen();
       setIsFullscreen(false);
     }
-  };
-
-  const handleLogout = () => {
+  }; const handleLogout = () => {
+    console.log("Logout button clicked!"); // Debug log
+    // Clear all authentication data
     localStorage.removeItem("isAuthenticated");
     localStorage.removeItem("username");
     localStorage.removeItem("password");
     localStorage.removeItem("schoolMaster");
     localStorage.removeItem("schoolCode");
-    sessionStorage.removeItem("token");
-    sessionStorage.removeItem("tokenExpiry");
+    sessionStorage.clear(); // This clears token, tokenExpiry, and schoolCode from session
+
     setIsAuthenticated(false);
     setDropdownOpen(false);
     navigate("/login");
-  };  
-  return (
-    <nav className="fixed top-2 left-2 right-2 z-50 transition-all duration-300">
+  }; return (
+    <nav
+      className={`fixed top-2 left-2 right-2 z-50 transition-all duration-500 ease-in-out ${isVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'
+        }`}
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Mobile Layout: Menu | Search + Profile */}
+        {/* Mobile Layout: Menu | Search + Profile */}
         <div className="md:hidden flex items-center justify-between h-16 navbar-height">
           {/* Enhanced Menu Button */}
           <div className="relative group">
@@ -106,7 +160,7 @@ const Navbar = ({ mobileOpen, setMobileOpen }) => {
             {/* Enhanced Mobile Search Button */}
             <div className="relative group">
               <div className="absolute -inset-1 bg-gradient-to-r from-green-400 to-blue-400 rounded-full blur opacity-20 group-hover:opacity-40 transition duration-300"></div>
-              <button 
+              <button
                 onClick={() => setMobileSearchOpen(true)}
                 className="relative bg-white/70 backdrop-blur-sm hover:bg-white/90 p-3 rounded-full border border-white/20 shadow-lg transition-all duration-200 cursor-pointer"
                 title="Search"
@@ -209,9 +263,9 @@ const Navbar = ({ mobileOpen, setMobileOpen }) => {
           </div>
         </div>        {/* Dropdown Menu */}
         {dropdownOpen && (
-          <div className="absolute right-2 md:right-4 top-16 w-64 z-20 animate-fadeIn">
+          <div className="absolute right-2 md:right-4 top-16 w-64 z-20 animate-fadeIn dropdown-container">
             <div className="bg-white border border-gray-200 rounded-2xl shadow-2xl overflow-hidden">
-              
+
               {/* User Info Header */}
               <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
                 <div className="flex items-center gap-3">
@@ -238,8 +292,8 @@ const Navbar = ({ mobileOpen, setMobileOpen }) => {
                   <CgProfile className="text-lg text-gray-500 group-hover:text-blue-500 transition-colors duration-200" />
                   <span className="font-medium text-gray-700 group-hover:text-gray-900">Profile Settings</span>
                 </button>
-                
-                <button 
+
+                <button
                   onClick={() => {
                     setDropdownOpen(false);
                     navigate("/settings");
@@ -249,9 +303,9 @@ const Navbar = ({ mobileOpen, setMobileOpen }) => {
                   <FaCog className="text-lg text-gray-500 group-hover:text-indigo-500 transition-colors duration-200" />
                   <span className="font-medium text-gray-700 group-hover:text-gray-900">Settings</span>
                 </button>
-                
+
                 <div className="my-2 border-t border-gray-200"></div>
-                
+
                 <button
                   onClick={handleLogout}
                   className="w-full px-6 py-3 flex items-center gap-3 text-left hover:bg-red-50 transition-all duration-200 group cursor-pointer"

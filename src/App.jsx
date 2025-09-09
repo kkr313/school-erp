@@ -61,6 +61,7 @@ function LayoutWrapper({ children }) {
   const isLoginPage = location.pathname === "/login";
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true); // Default to collapsed
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isNavbarVisible, setIsNavbarVisible] = useState(true);
   const { theme, fontColor } = useTheme();
 
   const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
@@ -79,6 +80,7 @@ function LayoutWrapper({ children }) {
         <Navbar 
           mobileOpen={mobileOpen}
           setMobileOpen={setMobileOpen}
+          onVisibilityChange={setIsNavbarVisible}
         />
       )}
       {!isLoginPage && (
@@ -98,7 +100,7 @@ function LayoutWrapper({ children }) {
           fontFamily: theme.fontFamily,
           minHeight: "100vh",
           width: isMobile ? "100%" : "auto",
-          paddingTop: isMobile ? "4rem" : "1rem", // Reduced top padding
+          paddingTop: isMobile ? (isNavbarVisible ? "4rem" : "1rem") : "1rem", // Dynamic padding based on navbar visibility
           paddingLeft: isMobile ? "0" : "1.25rem",
           paddingRight: isMobile ? "0" : "1.25rem",
         }}
@@ -136,72 +138,148 @@ const ProtectedRoute = ({ element }) => {
 
 // Main App Component
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
-  const [loading, setLoading] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
 
+  // Auto-logout function
+  const handleAutoLogout = () => {
+    setIsAuthenticated(false);
+    localStorage.removeItem("isAuthenticated");
+    sessionStorage.clear();
+  };
+
+  // Set up auto-logout timer when authenticated
   useEffect(() => {
-    // Clear any existing bypass data on app start
-    const clearBypassData = () => {
-      // Only clear if these seem to be from bypass (mock data)
-      const token = sessionStorage.getItem("token");
-      const schoolCode = localStorage.getItem("schoolCode");
-      
-      if (token === "mock-token" || schoolCode === "T36") {
-        // Clear all bypass-related data
-        sessionStorage.clear();
-        localStorage.removeItem("schoolCode");
-        localStorage.removeItem("username"); 
-        localStorage.removeItem("password");
-        localStorage.removeItem("isAuthenticated");
+    if (isAuthenticated) {
+      const expiry = sessionStorage.getItem("tokenExpiry");
+      if (expiry) {
+        const timeLeft = parseInt(expiry) - new Date().getTime();
+        if (timeLeft > 0) {
+          const timer = setTimeout(handleAutoLogout, timeLeft);
+          return () => clearTimeout(timer);
+        } else {
+          handleAutoLogout();
+        }
       }
+    }
+  }, [isAuthenticated]);
+
+  // Periodic session check
+  useEffect(() => {
+    if (isAuthenticated) {
+      const checkSession = () => {
+        const expiry = sessionStorage.getItem("tokenExpiry");
+        if (!expiry || new Date().getTime() >= parseInt(expiry)) {
+          handleAutoLogout();
+        }
+      };
+
+      // Check session every minute
+      const interval = setInterval(checkSession, 60000);
+      
+      // Check session when window gains focus
+      const handleFocus = () => checkSession();
+      window.addEventListener('focus', handleFocus);
+      
+      return () => {
+        clearInterval(interval);
+        window.removeEventListener('focus', handleFocus);
+      };
+    }
+  }, [isAuthenticated]);
+
+  // Initial auth check on app mount (no clearing of valid sessions)
+  useEffect(() => {
+    const checkLogin = async () => {
+      // First check if we have a valid session token
+      const token = sessionStorage.getItem("token");
+      const expiry = sessionStorage.getItem("tokenExpiry");
+      const isAuthenticatedFromStorage = localStorage.getItem("isAuthenticated");
+      
+      if (token && expiry && new Date().getTime() < parseInt(expiry)) {
+        // Valid session exists
+        setIsAuthenticated(true);
+        localStorage.setItem("isAuthenticated", "true");
+        setLoading(false);
+        return;
+      }
+
+      // If localStorage says authenticated but no valid session, check saved credentials
+      if (isAuthenticatedFromStorage === "true") {
+        const savedUsername = localStorage.getItem("username");
+        const savedPassword = localStorage.getItem("password");
+        const savedSchoolCode = localStorage.getItem("schoolCode");
+
+        if (savedUsername && savedPassword && savedSchoolCode) {
+          try {
+            const response = await fetch(
+              "https://teo-vivekanadbihar.co.in/TEO-School-API/api/Login/Login",
+              {
+                method: "POST",
+                headers: { 
+                  "Content-Type": "application/json",
+                  "BS-SchoolCode": savedSchoolCode
+                },
+                body: JSON.stringify({
+                  username: savedUsername,
+                  password: savedPassword,
+                  trackingID: "WEB_APP"
+                }),
+              }
+            );
+
+            if (response.ok) {
+              const result = await response.json();
+              if (result.isValid) {
+                // Store new session
+                const SESSION_DURATION = 30 * 60 * 1000; // 30 minutes
+                sessionStorage.setItem("token", result.userToken);
+                const newExpiry = new Date().getTime() + SESSION_DURATION;
+                sessionStorage.setItem("tokenExpiry", newExpiry);
+                sessionStorage.setItem("schoolCode", savedSchoolCode);
+                
+                setIsAuthenticated(true);
+                localStorage.setItem("isAuthenticated", "true");
+              } else {
+                // Invalid credentials, clear them
+                setIsAuthenticated(false);
+                localStorage.removeItem("isAuthenticated");
+                localStorage.removeItem("username");
+                localStorage.removeItem("password");
+                sessionStorage.clear();
+              }
+            } else {
+              // API error, clear credentials
+              setIsAuthenticated(false);
+              localStorage.removeItem("isAuthenticated");
+              localStorage.removeItem("username");
+              localStorage.removeItem("password");
+              sessionStorage.clear();
+            }
+          } catch (error) {
+            console.error("Auto-login check failed:", error);
+            setIsAuthenticated(false);
+            localStorage.removeItem("isAuthenticated");
+            sessionStorage.clear();
+          }
+        } else {
+          // No saved credentials but isAuthenticated is true - clear it
+          setIsAuthenticated(false);
+          localStorage.removeItem("isAuthenticated");
+          sessionStorage.clear();
+        }
+      } else {
+        // Not authenticated
+        setIsAuthenticated(false);
+        localStorage.removeItem("isAuthenticated");
+        sessionStorage.clear();
+      }
+
+      setLoading(false);
     };
 
-    clearBypassData();
+    checkLogin();
   }, []);
-
-  // useEffect(() => {
-  //   const checkLogin = async () => {
-  //     const savedUsername = localStorage.getItem("username");
-  //     const savedPassword = localStorage.getItem("password");
-  //     const isAuthenticatedFromStorage = localStorage.getItem("isAuthenticated");
-
-  //     if (savedUsername && savedPassword && isAuthenticatedFromStorage === "true") {
-  //       try {
-  //         const response = await fetch(
-  //           "https://teo-vivekanadbihar.co.in/api/Login/Login",
-  //           {
-  //             method: "POST",
-  //             headers: { "Content-Type": "application/json" },
-  //             body: JSON.stringify({
-  //               username: savedUsername,
-  //               password: savedPassword,
-  //             }),
-  //           }
-  //         );
-
-  //         const result = await response.json();
-  //         if (response.ok && result.isValid) {
-  //           setIsAuthenticated(true);
-  //           localStorage.setItem("isAuthenticated", "true");
-  //         } else {
-  //           setIsAuthenticated(false);
-  //           localStorage.removeItem("isAuthenticated");
-  //         }
-  //       } catch (error) {
-  //         console.error("Auto-login check failed:", error);
-  //         setIsAuthenticated(false);
-  //         localStorage.removeItem("isAuthenticated");
-  //       }
-  //     } else {
-  //       setIsAuthenticated(false);
-  //       localStorage.removeItem("isAuthenticated");
-  //     }
-
-  //     setLoading(false);
-  //   };
-
-  //   checkLogin();
-  // }, []);
 
   return (
     <AuthContext.Provider

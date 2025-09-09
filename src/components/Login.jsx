@@ -61,12 +61,17 @@ const Login = () => {
       handleLogout();
     }, timeLeft);
   };
-
   // ✅ Logout and clear session
   const handleLogout = () => {
+    // Clear all authentication data
+    localStorage.removeItem("isAuthenticated");
+    localStorage.removeItem("username");
+    localStorage.removeItem("password");
+    localStorage.removeItem("schoolMaster");
+    localStorage.removeItem("schoolCode");
     sessionStorage.clear();
     setIsAuthenticated(false);
-    navigate("/");
+    navigate("/login");
   };
 
   // ✅ Login API call
@@ -111,12 +116,13 @@ const Login = () => {
     } else {
       localStorage.removeItem("username");
       localStorage.removeItem("password");
-    }
-
-    // ✅ Auto logout timer
+    }    // ✅ Auto logout timer
     autoLogout(expiry);
 
+    // ✅ Set authentication status
     setIsAuthenticated(true);
+    localStorage.setItem("isAuthenticated", "true");
+    
     setUsername("");
     setPassword("");
     setSchoolCode(""); // optional: clear input field
