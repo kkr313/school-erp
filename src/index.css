@@ -1,0 +1,401 @@
+@import "tailwindcss";
+
+*{
+    box-sizing: border-box;
+}
+
+html, body{
+    width: 100%;
+    height: 100%;
+}
+
+/* Body padding to avoid navbar overlap */
+body {
+  padding-top: 4.7rem; /* Space for fixed navbar with top margin */
+}
+
+@media (max-width: 768px) {
+  body {
+    padding-top: 5rem; /* More space on mobile for navbar with top margin */
+  }
+}
+
+/* Main content spacing */
+.main-content {
+  margin-top: 1rem;
+  min-height: calc(100vh - 5rem);
+}
+
+/* Navbar height consistency */
+.navbar-height {
+  height: 4rem;
+}
+
+@media (max-width: 768px) {
+  .navbar-height {
+    height: 4.5rem;
+  }
+}
+
+/* Glassmorphism and Premium Effects */
+.glass {
+  /* background: rgba(255, 255, 255, 0.25); */
+  /* backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px); */
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  /* box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37); */
+}
+
+/* Enhanced glassmorphism effects for sidebar */
+.glass-active {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.2));
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.3);
+}
+
+.glass-hover {
+  transition: all 0.3s ease;
+}
+
+.glass-hover:hover {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.15));
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  transform: translateY(-1px);
+}
+
+/* Premium hover states */
+.premium-hover {
+  position: relative;
+  overflow: hidden;
+}
+
+.premium-hover::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transition: left 0.5s;
+}
+
+.premium-hover:hover::before {
+  left: 100%;
+}
+
+/* Enhanced fade in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* Gradient border animation */
+@keyframes gradientBorder {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.gradient-border {
+  background: linear-gradient(45deg, #3b82f6, #8b5cf6, #ec4899, #3b82f6);
+  background-size: 300% 300%;
+  animation: gradientBorder 3s ease infinite;
+}
+
+/* Floating animation for logo */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+}
+
+/* Premium floating animation */
+@keyframes float {
+  0%, 100% { 
+    transform: translateY(0px) rotate(0deg);
+  }
+  25% { 
+    transform: translateY(-3px) rotate(1deg);
+  }
+  50% { 
+    transform: translateY(-2px) rotate(-1deg);
+  }
+  75% { 
+    transform: translateY(-4px) rotate(0.5deg);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Enhanced glow effect */
+@keyframes enhancedGlow {
+  0%, 100% { 
+    box-shadow: 0 0 20px rgba(59,130,246,0.4), 0 0 40px rgba(139,92,246,0.2); 
+  }
+  50% { 
+    box-shadow: 0 0 30px rgba(59,130,246,0.6), 0 0 60px rgba(139,92,246,0.4); 
+  }
+}
+
+.enhanced-glow {
+  animation: enhancedGlow 2s infinite ease-in-out;
+}
+
+/* Shimmer effect */
+@keyframes shimmer {
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+}
+
+.shimmer {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite;
+}
+
+/* Notification pulse animation */
+@keyframes notificationPulse {
+  0%, 100% { 
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% { 
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+.notification-pulse {
+  animation: notificationPulse 2s infinite ease-in-out;
+}
+
+/* Status indicator animations */
+@keyframes statusPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.status-online {
+  animation: statusPulse 2s infinite ease-in-out;
+}
+
+/* Smooth backdrop transitions */
+.backdrop-transition {
+  transition: backdrop-filter 0.3s ease, background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Enhanced shadow layers */
+.shadow-layered {
+  box-shadow: 
+    0 1px 3px rgba(0, 0, 0, 0.12),
+    0 1px 2px rgba(0, 0, 0, 0.24),
+    0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.shadow-layered-hover:hover {
+  box-shadow: 
+    0 3px 6px rgba(0, 0, 0, 0.16),
+    0 3px 6px rgba(0, 0, 0, 0.23),
+    0 8px 30px rgba(0, 0, 0, 0.15);
+}
+
+/* Gradient text effects */
+.gradient-text-blue {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-text-purple {
+  background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Interactive element states */
+.interactive-element {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.interactive-element:hover {
+  transform: translateY(-1px);
+}
+
+.interactive-element:active {
+  transform: translateY(0px);
+}
+
+@keyframes marquee {
+  0%   { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+
+.animate-marquee {
+  display: inline-block;
+  animation: marquee 7s linear infinite;
+}
+
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 10px rgba(59,130,246,0.6); }
+  50% { box-shadow: 0 0 20px rgba(59,130,246,1); }
+}
+.glow {
+  animation: glow 1.5s infinite ease-in-out;
+}
+
+@media print {
+  .print-area {
+    background-color: white !important;
+    color: black !important;
+    font-family: Arial, sans-serif !important;
+  }
+
+  .print-area table {
+    color: black !important;
+  }
+
+  .print-area td,
+  .print-area th {
+    border: 1px solid #ccc !important;
+    padding: 8px !important;
+  }
+
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
+@media print {
+  .screen-area {
+    display: none !important;
+  }
+}
+
+/* Premium Sidebar Styles */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.6) rgba(255, 255, 255, 0.1);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  margin: 4px 0;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.7), rgba(147, 51, 234, 0.7));
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.9), rgba(147, 51, 234, 0.9));
+  transform: scaleX(1.2);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+/* Text shadow for premium look */
+.text-shadow-sm {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Sidebar hover animations */
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-slideIn {
+  animation: slideInLeft 0.3s ease-out forwards;
+}
+
+/* Enhanced glaassmorphism for sidebar */
+.sidebar-glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+}
+
+/* Premium gradient animations */
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradientShift 3s ease infinite;
+}
+
+/* Smooth transitions for sidebar items */
+.sidebar-item-transition {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar-item-transition:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Hide scrollbar when sidebar is collapsed */
+.no-scrollbar {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none; /* WebKit */
+}
+
+/* Mobile sidebar slide animation */
+@keyframes slideInFromLeft {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.mobile-sidebar-enter {
+  animation: slideInFromLeft 0.3s ease-out forwards;
+}
