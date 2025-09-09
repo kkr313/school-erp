@@ -19,7 +19,7 @@ import {
   configItems,
 } from "../utils/globalMenuItems";
 
-const Navbar = ({ mobileOpen, setMobileOpen, onVisibilityChange }) => {
+const Navbar = ({ mobileOpen, setMobileOpen, onVisibilityChange, isSidebarCollapsed = false }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -135,12 +135,21 @@ const Navbar = ({ mobileOpen, setMobileOpen, onVisibilityChange }) => {
     navigate("/login");
   }; return (
     <nav
-      className={`fixed top-2 left-2 right-2 z-50 transition-all duration-500 ease-in-out ${isVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'
-        }`}
-      onMouseEnter={() => setIsHovering(true)}
-      onMouseLeave={() => setIsHovering(false)}
+      className={`fixed top-2 left-2 right-2 z-50 transition-all duration-500 ease-in-out ${isVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'} pointer-events-none`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Background layer behind navbar content (non-interactive). On desktop, start after sidebar width. */}
+      <div
+        aria-hidden
+        className={`absolute inset-0 ${isSidebarCollapsed ? 'md:left-16' : 'md:left-72'} pointer-events-none z-0`}
+      >
+        <div className="h-full w-full rounded-2xl md:rounded-l-none bg-white/60 backdrop-blur-md"></div>
+      </div>
+
+      <div
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pointer-events-auto"
+        onMouseEnter={() => setIsHovering(true)}
+        onMouseLeave={() => setIsHovering(false)}
+      >
         {/* Mobile Layout: Menu | Search + Profile */}
         <div className="md:hidden flex items-center justify-between h-16 navbar-height">
           {/* Enhanced Menu Button */}

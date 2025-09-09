@@ -81,6 +81,7 @@ function LayoutWrapper({ children }) {
           mobileOpen={mobileOpen}
           setMobileOpen={setMobileOpen}
           onVisibilityChange={setIsNavbarVisible}
+          isSidebarCollapsed={isSidebarCollapsed}
         />
       )}
       {!isLoginPage && (
