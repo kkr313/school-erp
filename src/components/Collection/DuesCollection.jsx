@@ -287,12 +287,10 @@ const DuesCollection = () => {
           position: "sticky",
           top: 0,
           zIndex: 1000,
-          bgcolor: theme.formBg,
           backdropFilter: "blur(8px)",
           pb: 2,
           px: { xs: 2, sm: 3 },
-          pt: { xs: 2, sm: 3 },
-          borderBottom: "1px solid rgba(0,0,0,0.06)",
+          pt: { xs: 2, sm: 3 }
         }}
       >
         <Box sx={{ maxWidth: 1200, mx: "auto" }}>
