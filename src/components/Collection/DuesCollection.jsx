@@ -31,7 +31,7 @@ import {
   FormControl,
   InputLabel,
 } from "@mui/material";
-import { Search, Person, Receipt, Payment } from "@mui/icons-material";
+import { Search, Person, Receipt, Payment, Close } from "@mui/icons-material";
 import { useApi } from "../../utils/useApi";
 import GetFeeDetails from "../Dropdown/GetFeeDetails";
 import { useTheme } from "../../context/ThemeContext";
@@ -303,36 +303,12 @@ const DuesCollection = () => {
           ]}
         />
 
-        {/* Outstanding Dues Note */}
-        <Card
-          sx={{
-            mb: 2,
-            boxShadow: 0,
-            border: "1px solid",
-            borderColor: "warning.light",
-            bgcolor: "warning.50",
-          }}
-        >
-          <CardContent sx={{ py: 1.5 }}>
-            <Typography
-              variant="body2"
-              sx={{ fontWeight: 600, color: "warning.dark" }}
-            >
-              Outstanding dues collection
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              Search students with pending dues and collect payments.
-            </Typography>
-          </CardContent>
-        </Card>
-
         {/* Search Section */}
         <Card
           sx={{
             boxShadow: 0,
           }}
-        >
-          <CardContent sx={{ py: 1.5 }}>
+        >          <CardContent sx={{ py: 1.5 }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1.25 }}>
               {/* Search icon that expands to input */}
               <IconButton
@@ -347,10 +323,31 @@ const DuesCollection = () => {
                   transition: "transform 200ms ease, box-shadow 200ms ease",
                   "&:hover": { transform: "scale(1.05)", boxShadow: "0 10px 24px rgba(0,0,0,0.1)" },
                   border: "none",
+                  position: "relative",
                 }}
                 size="large"
               >
                 <Search sx={{ color: "text.secondary" }} />
+                {/* Student count badge */}
+                {searchText.trim() && filteredStudents.length > 0 && (
+                  <Chip
+                    label={`${filteredStudents.length}`}
+                    size="small"
+                    sx={{
+                      position: "absolute",
+                      top: -8,
+                      right: -8,
+                      bgcolor: "primary.main",
+                      color: "white",
+                      fontSize: "0.7rem",
+                      height: "20px",
+                      minWidth: "20px",
+                      "& .MuiChip-label": {
+                        px: 0.5,
+                        fontWeight: 600,
+                      },
+                    }}
+                  />                )}
               </IconButton>
 
               {/* Expanding input */}
@@ -375,17 +372,27 @@ const DuesCollection = () => {
                   inputRef={searchInputRef}
                   variant="outlined"
                   size="small"
-                  InputProps={{
-                    endAdornment: (
+                  InputProps={{                    endAdornment: (
                       <InputAdornment position="end">
                         {searchText && (
-                          <Button
+                          <IconButton
                             size="small"
                             onClick={() => setSearchText("")}
-                            sx={{ minWidth: "auto", p: 0.5 }}
+                            sx={{ 
+                              minWidth: "auto", 
+                              p: 0.5,
+                              bgcolor: "rgba(255,255,255,0.8)",
+                              "&:hover": {
+                                bgcolor: "rgba(255,255,255,1)",
+                                transform: "scale(1.1)",
+                              },
+                              transition: "all 0.2s ease",
+                              borderRadius: 1,
+                              mr: 0.5,
+                            }}
                           >
-                            ×
-                          </Button>
+                            <Close sx={{ fontSize: 16, color: "text.secondary" }} />
+                          </IconButton>
                         )}
                       </InputAdornment>
                     ),
@@ -413,18 +420,11 @@ const DuesCollection = () => {
           overflow: "auto",
         }}
       >
-        <Box sx={{ maxWidth: 1200, mx: "auto", px: { xs: 2, sm: 3 } }}>
-        {/* Search Results */}
+        <Box sx={{ maxWidth: 1200, mx: "auto", px: { xs: 2, sm: 3 } }}>        {/* Search Results */}
         {searchText.trim() && (
           <Card sx={{ mb: 2, boxShadow: 0 }}>
             <CardContent sx={{ py: 1.5 }}>
-              {/* Results Header */}
-              <Typography variant="body2" sx={{ mb: 1.5, fontWeight: 600, color: "text.secondary" }}>
-                {filteredStudents.length > 0 
-                  ? `Found ${filteredStudents.length} student${filteredStudents.length !== 1 ? 's' : ''} with dues`
-                  : 'No students with dues found'
-                }
-              </Typography>
+             
                 <Box
                 sx={{
                   minHeight: { xs: 400, sm: 500 },
@@ -472,19 +472,19 @@ const DuesCollection = () => {
                                 "&:hover": { bgcolor: "rgba(255,255,255,0.85)" },
                                 minHeight: { xs: "auto", sm: "unset" },
                               }}
-                            >
-                              <Box
+                            >                              <Box
                                 sx={{
                                   display: { xs: "flex", sm: "grid" },
                                   flexDirection: { xs: "column", sm: "unset" },
-                                  gridTemplateColumns: { sm: "1.2fr 1fr auto" },
-                                  columnGap: { sm: 1.25 },
-                                  rowGap: { xs: 1, sm: 0.75 },
+                                  gridTemplateColumns: { sm: "2fr 0.1fr 2fr 0.1fr 1.5fr" },
+                                  columnGap: { sm: 0 },
+                                  rowGap: { xs: 1, sm: 0 },
                                   alignItems: { xs: "stretch", sm: "center" },
                                   width: "100%",
                                   gap: { xs: 1, sm: 0 },
                                 }}
                               >
+                                {/* Column 1: Name + Father Name badge */}
                                 <Box
                                   sx={{
                                     minWidth: 0,
@@ -526,6 +526,27 @@ const DuesCollection = () => {
                                     }}
                                   />
                                 </Box>
+
+                                {/* Vertical Divider 1 - Hidden on mobile */}
+                                <Box
+                                  sx={{
+                                    display: { xs: "none", sm: "flex" },
+                                    justifyContent: "center",
+                                    alignItems: "center",
+                                    height: "100%",
+                                  }}
+                                >
+                                  <Box
+                                    sx={{
+                                      width: "1px",
+                                      height: "60%",
+                                      bgcolor: "rgba(0,0,0,0.08)",
+                                      borderRadius: "2px",
+                                    }}
+                                  />
+                                </Box>
+
+                                {/* Column 2: Class, Roll, Admission chips */}
                                 <Box
                                   sx={{
                                     display: "flex",
@@ -536,6 +557,7 @@ const DuesCollection = () => {
                                     borderRadius: 1.2,
                                     background: "linear-gradient(90deg, rgba(16,185,129,0.05), rgba(16,185,129,0.02))",
                                     minWidth: 0,
+                                    borderTop: { xs: "1px solid rgba(0,0,0,0.08)", sm: "none" },
                                   }}
                                 >
                                   <Chip
@@ -572,6 +594,27 @@ const DuesCollection = () => {
                                     }}
                                   />
                                 </Box>
+
+                                {/* Vertical Divider 2 - Hidden on mobile */}
+                                <Box
+                                  sx={{
+                                    display: { xs: "none", sm: "flex" },
+                                    justifyContent: "center",
+                                    alignItems: "center",
+                                    height: "100%",
+                                  }}
+                                >
+                                  <Box
+                                    sx={{
+                                      width: "1px",
+                                      height: "60%",
+                                      bgcolor: "rgba(0,0,0,0.08)",
+                                      borderRadius: "2px",
+                                    }}
+                                  />
+                                </Box>
+
+                                {/* Column 3: Pending Amount (right aligned on desktop, centered on mobile) */}
                                 <Box
                                   sx={{
                                     display: "flex",
@@ -581,9 +624,7 @@ const DuesCollection = () => {
                                     py: { xs: 0.5, sm: 0.75 },
                                     borderRadius: 1.2,
                                     background: "linear-gradient(90deg, rgba(239,68,68,0.05), rgba(239,68,68,0.02))",
-                                    borderLeft: { sm: "1px solid", xs: "none" },
-                                    borderTop: { xs: "1px solid", sm: "none" },
-                                    borderColor: "divider",
+                                    borderTop: { xs: "1px solid rgba(0,0,0,0.08)", sm: "none" },
                                     minWidth: 0,
                                     mt: { xs: 0.5, sm: 0 },
                                   }}
@@ -606,7 +647,25 @@ const DuesCollection = () => {
                                         },
                                       }}
                                     />
-                                  ) : null}
+                                  ) : (
+                                    <Chip
+                                      label="No Pending"
+                                      size="small"
+                                      variant="outlined"
+                                      sx={{
+                                        bgcolor: "rgba(34,197,94,0.08)",
+                                        borderColor: "success.light",
+                                        color: "success.main",
+                                        fontWeight: 600,
+                                        fontSize: { xs: "0.65rem", sm: "0.75rem" },
+                                        height: { xs: "22px", sm: "24px" },
+                                        "& .MuiChip-label": {
+                                          px: { xs: 0.75, sm: 1 },
+                                          fontWeight: 600,
+                                        },
+                                      }}
+                                    />
+                                  )}
                                 </Box>
                               </Box>
                             </ListItemButton>
