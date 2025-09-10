@@ -68,6 +68,23 @@ const FeeCollection = () => {
       Number(val || 0)
     );
 
+  // New: compute pending amount from duesDescription like "Aug-300+Sep-300"
+  const getPendingFromDescription = (desc) => {
+    if (desc == null) return 0;
+    if (typeof desc === "number") return desc;
+    const str = String(desc);
+    try {
+      return str
+        .split("+")
+        .map((part) => Number((part.split("-")[1] || part).toString().trim()))
+        .filter((n) => Number.isFinite(n))
+        .reduce((a, b) => a + b, 0);
+    } catch {
+      const nums = str.match(/\d+(?:\.\d+)?/g);
+      return nums ? nums.map(Number).reduce((a, b) => a + b, 0) : 0;
+    }
+  };
+
   // Fetch all students
   useEffect(() => {
     const fetchStudents = async () => {
@@ -211,8 +228,7 @@ const FeeCollection = () => {
         sx={{
           mb: 2,
           boxShadow: 0,
-          border: "1px solid",
-          borderColor: "divider",
+          // removed outer border around search area
         }}
       >
         <CardContent sx={{ py: 1.5 }}>
@@ -229,6 +245,8 @@ const FeeCollection = () => {
                 boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
                 transition: "transform 200ms ease, box-shadow 200ms ease",
                 "&:hover": { transform: "scale(1.05)", boxShadow: "0 10px 24px rgba(0,0,0,0.1)" },
+                // ensure no border around the search icon
+                border: "none",
               }}
               size="large"
             >
@@ -248,7 +266,7 @@ const FeeCollection = () => {
             >
               <TextField
                 fullWidth
-                placeholder="Search by name, admission no, or father's name"
+                placeholder={isSearchOpen ? "Search by name, admission no, or father's name" : "Search..."}
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
                 onBlur={() => {
@@ -283,22 +301,18 @@ const FeeCollection = () => {
                 }}
               />
             </Box>
-          </Box>
-
-          {/* Search Results */}
+          </Box>          {/* Search Results */}
           {searchText.trim() && (
             <Box
               sx={{
                 mt: 1.5,
-                maxHeight: 320,
+                maxHeight: { xs: 280, sm: 320 },
                 overflow: "auto",
-                border: "1px solid",
-                borderColor: "divider",
                 borderRadius: 2,
-                p: 0.75,
+                p: { xs: 1.5, sm: 2.5 }, // responsive padding
                 bgcolor: "rgba(255,255,255,0.55)",
-                backdropFilter: "blur(8px)",
-                boxShadow: "0 10px 24px rgba(0,0,0,0.08)",
+                backdropFilter: "blur(10px)",
+                boxShadow: "0 12px 28px rgba(0,0,0,0.12)",
               }}
             >
               {loading ? (
@@ -307,107 +321,161 @@ const FeeCollection = () => {
                 </Box>
               ) : filteredStudents.length > 0 ? (
                 <List dense disablePadding>
-                  {filteredStudents.map((student) => (
-                    <ListItemButton
-                      key={student.id}
-                      dense
-                      onClick={() => handleSelectStudent(student)}
-                      sx={{
-                        my: 0.6,
-                        py: 1,
-                        px: 1.25,
-                        borderRadius: 2,
-                        border: "1px solid",
-                        borderColor: "divider",
-                        bgcolor: "rgba(255,255,255,0.65)",
-                        backdropFilter: "blur(10px)",
-                        '&:hover': { bgcolor: "rgba(255,255,255,0.85)" },
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 2,
-                      }}
-                    >
-                      {/* Left: Name + Father Name badge */}
-                      <Box sx={{ flex: 1, minWidth: 0 }}>
-                        <Typography
-                          variant="body2"
-                          sx={{ fontWeight: 700, mb: 0.5, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}
-                        >
-                          {student.studentName}
-                        </Typography>
-                        <Chip
-                          label={`Father Name - ${student.fatherName}`}
-                          size="small"
-                          variant="outlined"
-                          sx={{
-                            bgcolor: "rgba(255,255,255,0.7)",
-                            backdropFilter: "blur(6px)",
-                            borderColor: "info.light",
-                            color: "info.main",
-                            fontWeight: 500,
-                          }}
-                        />
-                      </Box>
-
-                      {/* Right: Class, Admission, Roll with vertical divider */}
-                      <Box
+                  {filteredStudents.map((student) => {
+                    const pending = getPendingFromDescription(student.duesDescription);
+                    return (                      <ListItemButton
+                        key={student.id}
+                        dense
+                        onClick={() => handleSelectStudent(student)}
                         sx={{
-                          display: "flex",
-                          alignItems: "flex-end",
-                          flexDirection: "column",
-                          gap: 0.75,
-                          pl: 1.5,
-                          borderLeft: "1px solid",
+                          my: { xs: 0.4, sm: 0.6 },
+                          py: { xs: 0.75, sm: 1 },
+                          px: { xs: 1, sm: 1.25 },
+                          borderRadius: 2,
+                          border: "1px solid",
                           borderColor: "divider",
-                          minWidth: 220,
-                          justifyContent: "center",
+                          bgcolor: "rgba(255,255,255,0.65)",
+                          backdropFilter: "blur(10px)",
+                          '&:hover': { bgcolor: "rgba(255,255,255,0.85)" },
+                          minHeight: { xs: "auto", sm: "unset" },
                         }}
-                      >
-                        <Chip
-                          label={`${student.className}-${student.section}`}
-                          size="small"
-                          variant="outlined"
+                      >                        {/* Responsive layout: stacked on mobile, grid on desktop */}
+                        <Box
                           sx={{
-                            bgcolor: "rgba(99,102,241,0.08)",
-                            borderColor: "primary.light",
-                            color: "primary.main",
-                            fontWeight: 600,
+                            display: { xs: "flex", sm: "grid" },
+                            flexDirection: { xs: "column", sm: "unset" },
+                            gridTemplateColumns: { sm: "1.2fr 1fr auto" },
+                            columnGap: { sm: 1.25 },
+                            rowGap: { xs: 1, sm: 0.75 },
+                            alignItems: { xs: "stretch", sm: "center" },
+                            width: "100%",
+                            gap: { xs: 1, sm: 0 },
                           }}
-                        />
-                        <Chip
-                          label={`Roll No. ${student.rollNo}`}
-                          size="small"
-                          variant="outlined"
-                          sx={{
-                            bgcolor: "rgba(34,197,94,0.08)",
-                            borderColor: "success.light",
-                            color: "success.main",
-                          }}
-                        />
-                        <Chip
-                          label={`Admission No. ${student.admissionNo}`}
-                          size="small"
-                          variant="outlined"
-                          sx={{
-                            bgcolor: "rgba(236,72,153,0.08)",
-                            borderColor: "secondary.light",
-                            color: "secondary.main",
-                          }}
-                        />
-                        {Number.isFinite(Number(student.duesDescription)) && Number(student.duesDescription) > 0 ? (
-                          <Chip
-                            label={`₹${formatAmount(Number(student.duesDescription))}`}
-                            size="small"
+                        >                          {/* Column 1: Name + Father Name badge */}
+                          <Box
                             sx={{
-                              bgcolor: "rgba(239,68,68,0.08)",
-                              borderColor: "error.light",
-                              color: "error.main",
+                              minWidth: 0,
+                              px: { xs: 0.75, sm: 1 },
+                              py: { xs: 0.5, sm: 0.75 },
+                              borderRadius: 1.2,
+                              background: "linear-gradient(90deg, rgba(59,130,246,0.05), rgba(59,130,246,0.02))",
                             }}
-                          />
-                        ) : null}
-                      </Box>
-                    </ListItemButton>
-                  ))}
+                          >
+                            <Typography
+                              variant="body2"
+                              sx={{ 
+                                fontWeight: 700, 
+                                mb: 0.5, 
+                                fontSize: { xs: "0.825rem", sm: "0.875rem" },
+                                whiteSpace: "nowrap", 
+                                overflow: "hidden", 
+                                textOverflow: "ellipsis" 
+                              }}
+                            >
+                              {student.studentName}
+                            </Typography>
+                            <Chip
+                              label={`Father Name - ${student.fatherName}`}
+                              size="small"
+                              variant="outlined"
+                              sx={{
+                                bgcolor: "rgba(255,255,255,0.7)",
+                                backdropFilter: "blur(6px)",
+                                borderColor: "info.light",
+                                color: "info.main",
+                                fontWeight: 500,
+                                maxWidth: "100%",
+                                fontSize: { xs: "0.7rem", sm: "0.75rem" },
+                                height: { xs: "20px", sm: "24px" },                                "& .MuiChip-label": {
+                                  px: { xs: 0.5, sm: 1 },
+                                },
+                              }}
+                            />
+                          </Box>                          {/* Column 2: Class, Roll, Admission chips */}
+                          <Box
+                            sx={{
+                              display: "flex",
+                              flexWrap: "wrap",
+                              gap: { xs: 0.5, sm: 0.75 },
+                              px: { xs: 0.75, sm: 1 },
+                              py: { xs: 0.5, sm: 0.75 },
+                              borderRadius: 1.2,
+                              background: "linear-gradient(90deg, rgba(16,185,129,0.05), rgba(16,185,129,0.02))",
+                              minWidth: 0,
+                            }}
+                          >
+                            <Chip
+                              label={`${student.className}-${student.section} | Roll ${student.rollNo ?? '-'}`}
+                              size="small"
+                              variant="outlined"
+                              sx={{
+                                bgcolor: "rgba(99,102,241,0.08)",
+                                borderColor: "primary.light",
+                                color: "primary.main",
+                                fontWeight: 600,
+                                fontSize: { xs: "0.65rem", sm: "0.75rem" },
+                                height: { xs: "20px", sm: "24px" },
+                                "& .MuiChip-label": {
+                                  px: { xs: 0.5, sm: 1 },
+                                },
+                                maxWidth: { xs: "100%", sm: "auto" },
+                              }}
+                            />
+                            <Chip
+                              label={`Admission No. ${student.admissionNo}`}
+                              size="small"
+                              variant="outlined"                              sx={{
+                                bgcolor: "rgba(236,72,153,0.08)",
+                                borderColor: "secondary.light",
+                                color: "secondary.main",
+                                fontSize: { xs: "0.65rem", sm: "0.75rem" },
+                                height: { xs: "20px", sm: "24px" },
+                                "& .MuiChip-label": {
+                                  px: { xs: 0.5, sm: 1 },
+                                },
+                                maxWidth: { xs: "100%", sm: "auto" },
+                              }}
+                            />
+                          </Box>                          {/* Column 3: Pending Amount (right aligned on desktop, centered on mobile) */}
+                          <Box
+                            sx={{
+                              display: "flex",
+                              justifyContent: { xs: "center", sm: "flex-end" },
+                              alignItems: "center",
+                              px: { xs: 0.75, sm: 1 },
+                              py: { xs: 0.5, sm: 0.75 },
+                              borderRadius: 1.2,
+                              background: "linear-gradient(90deg, rgba(239,68,68,0.05), rgba(239,68,68,0.02))",
+                              borderLeft: { sm: "1px solid", xs: "none" },
+                              borderTop: { xs: "1px solid", sm: "none" },
+                              borderColor: "divider",
+                              minWidth: 0,
+                              mt: { xs: 0.5, sm: 0 },
+                            }}
+                          >                            {pending > 0 ? (
+                              <Chip
+                                label={`Pending ₹${formatAmount(pending)}`}
+                                size="small"
+                                variant="outlined"
+                                sx={{
+                                  bgcolor: "rgba(239,68,68,0.08)",
+                                  borderColor: "error.light",
+                                  color: "error.main",
+                                  fontWeight: 700,
+                                  fontSize: { xs: "0.65rem", sm: "0.75rem" },
+                                  height: { xs: "22px", sm: "24px" },
+                                  "& .MuiChip-label": {
+                                    px: { xs: 0.75, sm: 1 },
+                                    fontWeight: 700,
+                                  },
+                                }}
+                              />
+                            ) : null}
+                          </Box>
+                        </Box>
+                      </ListItemButton>
+                    );
+                  })}
                 </List>
               ) : (
                 <Typography
@@ -513,16 +581,14 @@ const FeeCollection = () => {
                   <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
                     Fee Collection
                   </Typography>
-                </Box>
-
-                {/* Receipt Details */}
+                </Box>                {/* Receipt Details */}
                 <Grid container spacing={1.5} sx={{ mb: 2 }}>
-                  <Grid item xs={6}>
+                  <Grid item xs={12} sm={6}>
                     <Typography variant="caption" color="text.secondary">
                       Receipt No: <strong>{receiptNumber}</strong>
                     </Typography>
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid item xs={12} sm={6}>
                     <TextField
                       label="Receipt Date"
                       type="date"
@@ -552,11 +618,16 @@ const FeeCollection = () => {
                 </Box>
 
                 {/* Fee Summary */}
-                {selectedMonthsData.length > 0 && (
-                  <TableContainer
+                {selectedMonthsData.length > 0 && (                  <TableContainer
                     component={Paper}
                     variant="outlined"
-                    sx={{ mb: 2 }}
+                    sx={{ 
+                      mb: 2,
+                      overflowX: "auto",
+                      "& .MuiTable-root": {
+                        minWidth: { xs: 300, sm: "auto" },
+                      },
+                    }}
                   >
                     <Table size="small">
                       <TableHead>
@@ -610,9 +681,7 @@ const FeeCollection = () => {
                           >
                             ₹{formatAmount(totalBilling)}
                           </TableCell>
-                        </TableRow>
-
-                        {/* Fine */}
+                        </TableRow>                        {/* Fine */}
                         <TableRow>
                           <TableCell>Fine</TableCell>
                           <TableCell align="right">
@@ -621,16 +690,14 @@ const FeeCollection = () => {
                               size="small"
                               value={fine}
                               onChange={(e) => setFine(e.target.value)}
-                              sx={{ width: 100 }}
+                              sx={{ width: { xs: 80, sm: 100 } }}
                               inputProps={{
                                 min: 0,
-                                style: { textAlign: "right" },
+                                style: { textAlign: "right", fontSize: "0.875rem" },
                               }}
                             />
                           </TableCell>
-                        </TableRow>
-
-                        {/* Concession */}
+                        </TableRow>                        {/* Concession */}
                         <TableRow>
                           <TableCell>Concession</TableCell>
                           <TableCell align="right">
@@ -639,10 +706,10 @@ const FeeCollection = () => {
                               size="small"
                               value={concession}
                               onChange={(e) => setConcession(e.target.value)}
-                              sx={{ width: 100 }}
+                              sx={{ width: { xs: 80, sm: 100 } }}
                               inputProps={{
                                 min: 0,
-                                style: { textAlign: "right" },
+                                style: { textAlign: "right", fontSize: "0.875rem" },
                               }}
                             />
                           </TableCell>
@@ -678,13 +745,12 @@ const FeeCollection = () => {
                                 if (errors.paidAmount)
                                   setErrors((prev) => ({
                                     ...prev,
-                                    paidAmount: "",
-                                  }));
+                                    paidAmount: "",                                  }));
                               }}
-                              sx={{ width: 100 }}
+                              sx={{ width: { xs: 80, sm: 100 } }}
                               inputProps={{
                                 min: 0,
-                                style: { textAlign: "right" },
+                                style: { textAlign: "right", fontSize: "0.875rem" },
                               }}
                               error={!!errors.paidAmount}
                               helperText={errors.paidAmount}

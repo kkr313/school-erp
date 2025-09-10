@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Box,
   TextField,
@@ -23,6 +23,7 @@ import {
   List,
   ListItemButton,
   ListItemText,
+  IconButton,
 } from "@mui/material";
 import { Search, Person, Receipt, Payment } from "@mui/icons-material";
 import { useApi } from "../../utils/useApi";
@@ -41,6 +42,8 @@ const DuesCollection = () => {
   const [receiptDate, setReceiptDate] = useState(
     new Date().toISOString().split("T")[0]
   );
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const searchInputRef = useRef(null);
 
   const { callApi, loading, error } = useApi();
   const [successMsg, setSuccessMsg] = useState(false);
@@ -63,6 +66,73 @@ const DuesCollection = () => {
     new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 }).format(
       Number(val || 0)
     );
+
+  // Compute pending from duesDescription like "Aug-300+Sep-2500" or accept plain number
+  const getPendingFromDues = (duesDescription) => {
+    if (duesDescription == null) return 0;
+    if (typeof duesDescription === "number") return duesDescription;
+    const str = String(duesDescription);
+    try {
+      return str
+        .split("+")
+        .map((part) => Number(part.split("-")[1] || part))
+        .filter((n) => Number.isFinite(n))
+        .reduce((a, b) => a + b, 0);
+    } catch (_) {
+      const nums = str.match(/\d+(?:\.\d+)?/g);
+      return nums ? nums.map(Number).reduce((a, b) => a + b, 0) : 0;
+    }
+  };
+
+  // Extract month names from duesDescription like "Aug-300+Sep-2500" and normalize to short names
+  const extractMonthNames = (duesDescription) => {
+    if (duesDescription == null) return [];
+    if (typeof duesDescription === "number") return [];
+    const str = String(duesDescription);
+
+    const monthMap = {
+      january: "Jan",
+      february: "Feb",
+      march: "Mar",
+      april: "Apr",
+      may: "May",
+      june: "Jun",
+      july: "Jul",
+      august: "Aug",
+      september: "Sep",
+      october: "Oct",
+      november: "Nov",
+      december: "Dec",
+      jan: "Jan",
+      feb: "Feb",
+      mar: "Mar",
+      apr: "Apr",
+      jun: "Jun",
+      jul: "Jul",
+      aug: "Aug",
+      sep: "Sep",
+      sept: "Sep",
+      oct: "Oct",
+      nov: "Nov",
+      dec: "Dec",
+    };
+
+    const parts = str
+      .split(/[+,]/)
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+    const months = [];
+    for (const p of parts) {
+      // pick word prefix before '-' or space
+      const match = p.match(/^([A-Za-z]+)[\s-]/);
+      if (match) {
+        const key = match[1].toLowerCase();
+        months.push(monthMap[key] || match[1]);
+      }
+    }
+    return months;
+  };
 
   // Fetch students with dues
   useEffect(() => {
@@ -108,10 +178,19 @@ const DuesCollection = () => {
   };
 
   const fetchReceiptNumber = async (admissionId) => {
-    const data = await callApi(
-      "/api/MonthlyBillingFees/GetBillingReceiptNumber",
+    // Try dues billing endpoint first, then fallback to monthly billing
+    let data = await callApi(
+      "/api/DuesBillingFees/GetBillingReceiptNumber",
       { admissionId }
     );
+
+    if (!data || !data.receiptNumber) {
+      data = await callApi(
+        "/api/MonthlyBillingFees/GetBillingReceiptNumber",
+        { admissionId }
+      );
+    }
+
     if (data && data.receiptNumber) {
       setReceiptNumber(data.receiptNumber);
     } else {
@@ -229,61 +308,87 @@ const DuesCollection = () => {
         sx={{
           mb: 2,
           boxShadow: 0,
-          border: "1px solid",
-          borderColor: "divider",
+          // removed outer border for a cleaner look
         }}
       >
         <CardContent sx={{ py: 1.5 }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-            <TextField
-              fullWidth
-              placeholder="Search by name, admission no, or father's name"
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              variant="outlined"
-              size="small"
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Search sx={{ color: "text.secondary", fontSize: 20 }} />
-                  </InputAdornment>
-                ),
-                endAdornment: searchText && (
-                  <InputAdornment position="end">
-                    <Button
-                      size="small"
-                      onClick={() => setSearchText("")}
-                      sx={{ minWidth: "auto", p: 0.5 }}
-                    >
-                      ×
-                    </Button>
-                  </InputAdornment>
-                ),
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.25 }}>
+            {/* Search icon that expands to input */}
+            <IconButton
+              onClick={() => {
+                setIsSearchOpen(true);
+                setTimeout(() => searchInputRef.current?.focus(), 0);
               }}
               sx={{
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: 3,
-                  bgcolor: "rgba(255,255,255,0.7)",
-                  backdropFilter: "blur(8px)",
-                  boxShadow: "0 6px 18px rgba(0,0,0,0.06)",
-                },
+                bgcolor: "rgba(255,255,255,0.7)",
+                backdropFilter: "blur(8px)",
+                boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
+                transition: "transform 200ms ease, box-shadow 200ms ease",
+                "&:hover": { transform: "scale(1.05)", boxShadow: "0 10px 24px rgba(0,0,0,0.1)" },
+                border: "none", // ensure no border around the icon
               }}
-            />
-          </Box>
+              size="large"
+            >
+              <Search sx={{ color: "text.secondary" }} />
+            </IconButton>
 
-          {/* Search Results */}
+            {/* Expanding input */}
+            <Box
+              sx={{
+                flex: 1,
+                maxWidth: isSearchOpen ? 1000 : 0,
+                opacity: isSearchOpen ? 1 : 0,
+                transform: isSearchOpen ? "scaleX(1)" : "scaleX(0.95)",
+                transition: "max-width 300ms ease, opacity 250ms ease, transform 250ms ease",
+                overflow: "hidden",
+              }}
+            >              <TextField
+                fullWidth
+                placeholder={isSearchOpen ? "Search by name, admission no, or father's name" : "Search..."}
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                onBlur={() => {
+                  if (!searchText.trim()) setIsSearchOpen(false);
+                }}
+                inputRef={searchInputRef}
+                variant="outlined"
+                size="small"
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      {searchText && (
+                        <Button
+                          size="small"
+                          onClick={() => setSearchText("")}
+                          sx={{ minWidth: "auto", p: 0.5 }}
+                        >
+                          ×
+                        </Button>
+                      )}
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: 3,
+                    bgcolor: "rgba(255,255,255,0.7)",
+                    backdropFilter: "blur(8px)",
+                    boxShadow: "0 6px 18px rgba(0,0,0,0.06)",
+                  },
+                }}              />
+            </Box>
+          </Box>          {/* Search Results */}
           {searchText.trim() && (
             <Box
               sx={{
                 mt: 1.5,
-                maxHeight: 320,
+                maxHeight: { xs: 280, sm: 320 },
                 overflow: "auto",
-                border: "1px solid",
-                borderColor: "divider",
                 borderRadius: 2,
-                p: 0.5,
-                bgcolor: "rgba(255,255,255,0.5)",
-                backdropFilter: "blur(6px)",
+                p: { xs: 1.5, sm: 2.5 }, // responsive padding
+                bgcolor: "rgba(255,255,255,0.55)",
+                backdropFilter: "blur(10px)",
+                boxShadow: "0 12px 28px rgba(0,0,0,0.12)",
               }}
             >
               {loading ? (
@@ -292,86 +397,167 @@ const DuesCollection = () => {
                 </Box>
               ) : filteredStudents.length > 0 ? (
                 <List dense disablePadding>
-                  {filteredStudents.map((student) => (
-                    <ListItemButton
-                      key={student.id}
-                      dense
-                      onClick={() => handleSelectStudent(student)}
-                      sx={{
-                        my: 0.5,
-                        py: 1,
-                        px: 1.25,
-                        borderRadius: 2,
-                        border: "1px solid",
-                        borderColor: "divider",
-                        bgcolor: "background.paper",
-                        '&:hover': { bgcolor: "action.hover" },
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 2,
-                      }}
-                    >
-                      {/* Left badges: Class/Section, Admission No, Roll No */}
-                      <Box sx={{ minWidth: 190, display: "flex", flexDirection: "column", gap: 0.5 }}>
-                        <Chip
-                          label={`${student.className}-${student.section}`}
-                          size="small"
-                          variant="outlined"
+                  {filteredStudents.map((student) => {
+                    const pending = getPendingFromDues(student.duesDescription);
+                    const classLabel = [student.className, student.section].filter(Boolean).join("-");
+                    const rollLabel = Number.isFinite(Number(student.rollNo)) ? `Roll ${student.rollNo}` : "Roll -";
+                    const admissionLabel = student.admissionNo ? `Admission No. ${student.admissionNo}` : "Admission -";
+                    return (                      <ListItemButton
+                        key={student.id}
+                        dense
+                        onClick={() => handleSelectStudent(student)}
+                        sx={{
+                          my: { xs: 0.4, sm: 0.6 },
+                          py: { xs: 0.75, sm: 1.1 },
+                          px: { xs: 1, sm: 1.25 },
+                          borderRadius: 2,
+                          border: "1px solid",
+                          borderColor: "divider",
+                          bgcolor: "rgba(255,255,255,0.65)",
+                          backdropFilter: "blur(10px)",
+                          "&:hover": { bgcolor: "rgba(255,255,255,0.85)" },
+                          minHeight: { xs: "auto", sm: "unset" },
+                        }}
+                      >{/* Responsive layout: stacked on mobile, grid on desktop */}
+                        <Box
                           sx={{
-                            bgcolor: "rgba(255,255,255,0.7)",
-                            backdropFilter: "blur(6px)",
-                            borderColor: "divider",
-                            fontWeight: 600,
-                            maxWidth: "fit-content",
+                            display: { xs: "flex", sm: "grid" },
+                            flexDirection: { xs: "column", sm: "unset" },
+                            gridTemplateColumns: { sm: "1.2fr 1fr auto" },
+                            columnGap: { sm: 1.25 },
+                            rowGap: { xs: 1, sm: 0.75 },
+                            alignItems: { xs: "stretch", sm: "center" },
+                            width: "100%",
+                            gap: { xs: 1, sm: 0 },
                           }}
-                        />
-                        <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap" }}>
-                          <Chip
-                            label={`Admission No. ${student.admissionNo}`}
-                            size="small"
-                            variant="outlined"
-                            sx={{ bgcolor: "rgba(255,255,255,0.7)", backdropFilter: "blur(6px)", borderColor: "divider" }}
-                          />
-                          <Chip
-                            label={`Roll No. ${student.rollNo}`}
-                            size="small"
-                            variant="outlined"
-                            sx={{ bgcolor: "rgba(255,255,255,0.7)", backdropFilter: "blur(6px)", borderColor: "divider" }}
-                          />
+                        >                          {/* Column 1: Name + Father Name badge */}
+                          <Box
+                            sx={{
+                              minWidth: 0,
+                              px: { xs: 0.75, sm: 1 },
+                              py: { xs: 0.5, sm: 0.75 },
+                              borderRadius: 1.2,
+                              background: "linear-gradient(90deg, rgba(59,130,246,0.05), rgba(59,130,246,0.02))",
+                            }}
+                          >
+                            <Typography
+                              variant="body2"
+                              sx={{ 
+                                fontWeight: 700, 
+                                mb: 0.5, 
+                                fontSize: { xs: "0.825rem", sm: "0.875rem" },
+                                whiteSpace: "nowrap", 
+                                overflow: "hidden", 
+                                textOverflow: "ellipsis" 
+                              }}
+                            >
+                              {student.studentName}
+                            </Typography>
+                            <Chip
+                              label={`Father Name - ${student.fatherName ?? '-'}`}
+                              size="small"
+                              variant="outlined"
+                              sx={{
+                                bgcolor: "rgba(255,255,255,0.7)",
+                                backdropFilter: "blur(6px)",
+                                borderColor: "info.light",
+                                color: "info.main",
+                                fontWeight: 500,
+                                maxWidth: "100%",
+                                fontSize: { xs: "0.7rem", sm: "0.75rem" },
+                                height: { xs: "20px", sm: "24px" },
+                                "& .MuiChip-label": {
+                                  px: { xs: 0.5, sm: 1 },
+                                },
+                              }}
+                            />
+                          </Box>                          {/* Column 2: Class, Roll, Admission chips */}
+                          <Box
+                            sx={{
+                              display: "flex",
+                              flexWrap: "wrap",
+                              gap: { xs: 0.5, sm: 0.75 },
+                              px: { xs: 0.75, sm: 1 },
+                              py: { xs: 0.5, sm: 0.75 },
+                              borderRadius: 1.2,
+                              background: "linear-gradient(90deg, rgba(16,185,129,0.05), rgba(16,185,129,0.02))",
+                              minWidth: 0,
+                            }}
+                          >
+                            <Chip
+                              label={`${student.className}-${student.section} | ${rollLabel}`}
+                              size="small"
+                              variant="outlined"
+                              sx={{
+                                bgcolor: "rgba(99,102,241,0.08)",
+                                borderColor: "primary.light",
+                                color: "primary.main",
+                                fontWeight: 600,
+                                fontSize: { xs: "0.65rem", sm: "0.75rem" },
+                                height: { xs: "20px", sm: "24px" },
+                                "& .MuiChip-label": {
+                                  px: { xs: 0.5, sm: 1 },
+                                },
+                                maxWidth: { xs: "100%", sm: "auto" },
+                              }}
+                            />
+                            <Chip
+                              label={admissionLabel}
+                              size="small"
+                              variant="outlined"
+                              sx={{
+                                bgcolor: "rgba(236,72,153,0.08)",
+                                borderColor: "secondary.light",
+                                color: "secondary.main",
+                                fontSize: { xs: "0.65rem", sm: "0.75rem" },
+                                height: { xs: "20px", sm: "24px" },
+                                "& .MuiChip-label": {
+                                  px: { xs: 0.5, sm: 1 },
+                                },
+                                maxWidth: { xs: "100%", sm: "auto" },
+                              }}
+                            />
+                          </Box>                          {/* Column 3: Pending Amount (right aligned on desktop, full width on mobile) */}
+                          <Box
+                            sx={{
+                              display: "flex",
+                              justifyContent: { xs: "center", sm: "flex-end" },
+                              alignItems: "center",
+                              px: { xs: 0.75, sm: 1 },
+                              py: { xs: 0.5, sm: 0.75 },
+                              borderRadius: 1.2,
+                              background: "linear-gradient(90deg, rgba(239,68,68,0.05), rgba(239,68,68,0.02))",
+                              borderLeft: { sm: "1px solid", xs: "none" },
+                              borderTop: { xs: "1px solid", sm: "none" },
+                              borderColor: "divider",
+                              minWidth: 0,
+                              mt: { xs: 0.5, sm: 0 },
+                            }}
+                          >
+                            {pending > 0 ? (
+                              <Chip
+                                label={`Pending ₹${formatAmount(pending)}`}
+                                size="small"
+                                variant="outlined"
+                                sx={{
+                                  bgcolor: "rgba(239,68,68,0.08)",
+                                  borderColor: "error.light",
+                                  color: "error.main",
+                                  fontWeight: 700,
+                                  fontSize: { xs: "0.65rem", sm: "0.75rem" },
+                                  height: { xs: "22px", sm: "24px" },
+                                  "& .MuiChip-label": {
+                                    px: { xs: 0.75, sm: 1 },
+                                    fontWeight: 700,
+                                  },
+                                }}
+                              />
+                            ) : null}
+                          </Box>
                         </Box>
-                      </Box>
-
-                      {/* Center: Name and Father name (chip) */}
-                      <Box sx={{ flex: 1, minWidth: 0 }}>
-                        <Typography
-                          variant="body2"
-                          sx={{ fontWeight: 700, mb: 0.5, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}
-                        >
-                          {student.studentName}
-                        </Typography>
-                        <Chip
-                          label={`Father Name - ${student.fatherName}`}
-                          size="small"
-                          sx={{
-                            bgcolor: "rgba(255,255,255,0.7)",
-                            backdropFilter: "blur(6px)",
-                            border: "1px solid",
-                            borderColor: "divider",
-                          }}
-                        />
-                      </Box>
-
-                      {/* Right: Dues amount */}
-                      {student.duesDescription ? (
-                        <Chip
-                          label={`₹${formatAmount(student.duesDescription)}`}
-                          color="error"
-                          size="small"
-                          sx={{ ml: "auto" }}
-                        />
-                      ) : null}
-                    </ListItemButton>
-                  ))}
+                      </ListItemButton>
+                    );
+                  })}
                 </List>
               ) : (
                 <Typography
@@ -477,16 +663,14 @@ const DuesCollection = () => {
                   <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
                     Dues Collection
                   </Typography>
-                </Box>
-
-                {/* Receipt Details */}
+                </Box>                {/* Receipt Details */}
                 <Grid container spacing={1.5} sx={{ mb: 2 }}>
-                  <Grid item xs={6}>
+                  <Grid item xs={12} sm={6}>
                     <Typography variant="caption" color="text.secondary">
                       Receipt No: <strong>{receiptNumber}</strong>
                     </Typography>
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid item xs={12} sm={6}>
                     <TextField
                       label="Receipt Date"
                       type="date"
@@ -513,14 +697,18 @@ const DuesCollection = () => {
                     onMonthsChange={setSelectedMonthsData}
                     onPrevDues={setPrevDues}
                   />
-                </Box>
-
-                {/* Fee Summary */}
+                </Box>                {/* Fee Summary */}
                 {selectedMonthsData.length > 0 && (
                   <TableContainer
                     component={Paper}
                     variant="outlined"
-                    sx={{ mb: 2 }}
+                    sx={{ 
+                      mb: 2,
+                      overflowX: "auto",
+                      "& .MuiTable-root": {
+                        minWidth: { xs: 300, sm: "auto" },
+                      },
+                    }}
                   >
                     <Table size="small">
                       <TableHead>
@@ -579,16 +767,15 @@ const DuesCollection = () => {
                         {/* Fine */}
                         <TableRow>
                           <TableCell>Fine</TableCell>
-                          <TableCell align="right">
-                            <TextField
+                          <TableCell align="right">                            <TextField
                               type="number"
                               size="small"
                               value={fine}
                               onChange={(e) => setFine(e.target.value)}
-                              sx={{ width: 100 }}
+                              sx={{ width: { xs: 80, sm: 100 } }}
                               inputProps={{
                                 min: 0,
-                                style: { textAlign: "right" },
+                                style: { textAlign: "right", fontSize: "0.875rem" },
                               }}
                             />
                           </TableCell>
@@ -597,16 +784,15 @@ const DuesCollection = () => {
                         {/* Concession */}
                         <TableRow>
                           <TableCell>Concession</TableCell>
-                          <TableCell align="right">
-                            <TextField
+                          <TableCell align="right">                            <TextField
                               type="number"
                               size="small"
                               value={concession}
                               onChange={(e) => setConcession(e.target.value)}
-                              sx={{ width: 100 }}
+                              sx={{ width: { xs: 80, sm: 100 } }}
                               inputProps={{
                                 min: 0,
-                                style: { textAlign: "right" },
+                                style: { textAlign: "right", fontSize: "0.875rem" },
                               }}
                             />
                           </TableCell>
@@ -628,8 +814,7 @@ const DuesCollection = () => {
                         {/* Paid Amount */}
                         <TableRow>
                           <TableCell>Paid Amount</TableCell>
-                          <TableCell align="right">
-                            <TextField
+                          <TableCell align="right">                            <TextField
                               type="number"
                               size="small"
                               value={paidAmount}
@@ -645,10 +830,10 @@ const DuesCollection = () => {
                                     paidAmount: "",
                                   }));
                               }}
-                              sx={{ width: 100 }}
+                              sx={{ width: { xs: 80, sm: 100 } }}
                               inputProps={{
                                 min: 0,
-                                style: { textAlign: "right" },
+                                style: { textAlign: "right", fontSize: "0.875rem" },
                               }}
                               error={!!errors.paidAmount}
                               helperText={errors.paidAmount}
