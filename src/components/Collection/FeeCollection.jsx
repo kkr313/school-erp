@@ -24,6 +24,12 @@ import {
   ListItemButton,
   ListItemText,
   IconButton,
+  Pagination,
+  Stack,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
 } from "@mui/material";
 import { Search, Person, Receipt, Payment } from "@mui/icons-material";
 import { useApi } from "../../utils/useApi";
@@ -58,10 +64,12 @@ const FeeCollection = () => {
     concession: "",
     paidAmount: "",
   });
-
   // New: animated search input control
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const searchInputRef = useRef(null);
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [studentsPerPage, setStudentsPerPage] = useState(10);
 
   const formatAmount = (val) =>
     new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 }).format(
@@ -112,6 +120,7 @@ const FeeCollection = () => {
         .includes(searchText.toLowerCase())
     );
     setFilteredStudents(filtered);
+    setCurrentPage(1); // Reset to first page on new search
   }, [searchText, students]);
 
   const handleSelectStudent = (student) => {
@@ -211,119 +220,153 @@ const FeeCollection = () => {
 
     console.log("Saved Payload:", payload);
     setSuccessMsg(true);
-  };
-
-  return (
-    <Box sx={{ p: { xs: 2, sm: 3 }, maxWidth: 1200, mx: "auto" }}>
-      <CustomBreadcrumb
-        title="Fee Collection"
-        links={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Collection", href: "/collection" },
-        ]}
-      />
-
-      {/* Search Section */}
-      <Card
+  };  return (
+    <Box sx={{ height: "100vh", display: "flex", flexDirection: "column" }}>
+      {/* Sticky Header Section */}
+      <Box
         sx={{
-          mb: 2,
-          boxShadow: 0,
-          // removed outer border around search area
+          position: "sticky",
+          top: 0,
+          zIndex: 1000,
+          backdropFilter: "blur(8px)",
+          pb: 2,
+          px: { xs: 2, sm: 3 },
+          pt: { xs: 2, sm: 3 },
         }}
       >
-        <CardContent sx={{ py: 1.5 }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.25 }}>
-            {/* Collapsed search icon -> expands to input */}
-            <IconButton
-              onClick={() => {
-                setIsSearchOpen(true);
-                setTimeout(() => searchInputRef.current?.focus(), 0);
-              }}
-              sx={{
-                bgcolor: "rgba(255,255,255,0.7)",
-                backdropFilter: "blur(8px)",
-                boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
-                transition: "transform 200ms ease, box-shadow 200ms ease",
-                "&:hover": { transform: "scale(1.05)", boxShadow: "0 10px 24px rgba(0,0,0,0.1)" },
-                // ensure no border around the search icon
-                border: "none",
-              }}
-              size="large"
-            >
-              <Search sx={{ color: "text.secondary" }} />
-            </IconButton>
+        <Box sx={{ maxWidth: 1200, mx: "auto" }}>
+        <CustomBreadcrumb
+          title="Fee Collection"
+          links={[
+            { label: "Dashboard", href: "/dashboard" },
+            { label: "Collection", href: "/collection" },
+          ]}
+        />
 
-            {/* Animated expanding search input */}
-            <Box
-              sx={{
-                flex: 1,
-                maxWidth: isSearchOpen ? 1000 : 0,
-                opacity: isSearchOpen ? 1 : 0,
-                transform: isSearchOpen ? "scaleX(1)" : "scaleX(0.95)",
-                transition: "max-width 300ms ease, opacity 250ms ease, transform 250ms ease",
-                overflow: "hidden",
-              }}
-            >
-              <TextField
-                fullWidth
-                placeholder={isSearchOpen ? "Search by name, admission no, or father's name" : "Search..."}
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
-                onBlur={() => {
-                  // collapse when empty and not interacting with results
-                  if (!searchText.trim()) setIsSearchOpen(false);
-                }}
-                inputRef={searchInputRef}
-                variant="outlined"
-                size="small"
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      {searchText && (
-                        <Button
-                          size="small"
-                          onClick={() => setSearchText("")}
-                          sx={{ minWidth: "auto", p: 0.5 }}
-                        >
-                          ×
-                        </Button>
-                      )}
-                    </InputAdornment>
-                  ),
+        {/* Search Section */}
+        <Card
+          sx={{
+            boxShadow: 0,
+          }}
+        >
+          <CardContent sx={{ py: 1.5 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.25 }}>
+              {/* Collapsed search icon -> expands to input */}
+              <IconButton
+                onClick={() => {
+                  setIsSearchOpen(true);
+                  setTimeout(() => searchInputRef.current?.focus(), 0);
                 }}
                 sx={{
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: 3,
-                    bgcolor: "rgba(255,255,255,0.7)",
-                    backdropFilter: "blur(8px)",
-                    boxShadow: "0 6px 18px rgba(0,0,0,0.06)",
-                  },
+                  bgcolor: "rgba(255,255,255,0.7)",
+                  backdropFilter: "blur(8px)",
+                  boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
+                  transition: "transform 200ms ease, box-shadow 200ms ease",
+                  "&:hover": { transform: "scale(1.05)", boxShadow: "0 10px 24px rgba(0,0,0,0.1)" },
+                  border: "none",
                 }}
-              />
+                size="large"
+              >
+                <Search sx={{ color: "text.secondary" }} />
+              </IconButton>
+
+              {/* Animated expanding search input */}
+              <Box
+                sx={{
+                  flex: 1,
+                  maxWidth: isSearchOpen ? 1000 : 0,
+                  opacity: isSearchOpen ? 1 : 0,
+                  transform: isSearchOpen ? "scaleX(1)" : "scaleX(0.95)",
+                  transition: "max-width 300ms ease, opacity 250ms ease, transform 250ms ease",
+                  overflow: "hidden",
+                }}
+              >
+                <TextField
+                  fullWidth
+                  placeholder={isSearchOpen ? "Search by name, admission no, or father's name" : "Search..."}
+                  value={searchText}
+                  onChange={(e) => setSearchText(e.target.value)}
+                  onBlur={() => {
+                    if (!searchText.trim()) setIsSearchOpen(false);
+                  }}
+                  inputRef={searchInputRef}
+                  variant="outlined"
+                  size="small"
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        {searchText && (
+                          <Button
+                            size="small"
+                            onClick={() => setSearchText("")}
+                            sx={{ minWidth: "auto", p: 0.5 }}
+                          >
+                            ×
+                          </Button>
+                        )}
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 3,
+                      bgcolor: "rgba(255,255,255,0.7)",
+                      backdropFilter: "blur(8px)",
+                      boxShadow: "0 6px 18px rgba(0,0,0,0.06)",
+                    },
+                  }}
+                />
+              </Box>
             </Box>
-          </Box>          {/* Search Results */}
-          {searchText.trim() && (
-            <Box
-              sx={{
-                mt: 1.5,
-                maxHeight: { xs: 280, sm: 320 },
-                overflow: "auto",
-                borderRadius: 2,
-                p: { xs: 1.5, sm: 2.5 }, // responsive padding
-                bgcolor: "rgba(255,255,255,0.55)",
-                backdropFilter: "blur(10px)",
-                boxShadow: "0 12px 28px rgba(0,0,0,0.12)",
-              }}
-            >
+          </CardContent>
+        </Card>
+        </Box>
+      </Box>
+
+      {/* Scrollable Content Area */}
+      <Box
+        sx={{
+          flex: 1,
+          overflow: "auto",
+        }}
+      >
+        <Box sx={{ maxWidth: 1200, mx: "auto", px: { xs: 2, sm: 3 } }}>        {/* Search Results */}
+        {searchText.trim() && (
+          <Card sx={{ mb: 2, boxShadow: 0 }}>
+            <CardContent sx={{ py: 1.5 }}>
+              {/* Results Header */}
+              <Typography variant="body2" sx={{ mb: 1.5, fontWeight: 600, color: "text.secondary" }}>
+                {filteredStudents.length > 0 
+                  ? `Found ${filteredStudents.length} student${filteredStudents.length !== 1 ? 's' : ''}`
+                  : 'No students found'
+                }
+              </Typography>
+              
+              <Box
+                sx={{
+                  minHeight: { xs: 300, sm: 400 },
+                  borderRadius: 2,
+                  p: { xs: 1.5, sm: 2.5 },
+                  bgcolor: "rgba(255,255,255,0.55)",
+                  backdropFilter: "blur(10px)",
+                  boxShadow: "0 12px 28px rgba(0,0,0,0.12)",
+                }}
+              >
               {loading ? (
-                <Box sx={{ display: "flex", justifyContent: "center", p: 2 }}>
-                  <CircularProgress size={20} />
+                <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: 200 }}>
+                  <CircularProgress size={24} />
                 </Box>
               ) : filteredStudents.length > 0 ? (
-                <List dense disablePadding>
-                  {filteredStudents.map((student) => {
-                    const pending = getPendingFromDescription(student.duesDescription);
-                    return (                      <ListItemButton
+                <>
+                  <List dense disablePadding>
+                    {(() => {
+                      const startIndex = (currentPage - 1) * studentsPerPage;
+                      const endIndex = startIndex + studentsPerPage;
+                      const paginatedStudents = filteredStudents.slice(startIndex, endIndex);
+                      
+                      return paginatedStudents.map((student) => {
+                        const pending = getPendingFromDescription(student.duesDescription);
+                        return (<ListItemButton
                         key={student.id}
                         dense
                         onClick={() => handleSelectStudent(student)}
@@ -469,28 +512,52 @@ const FeeCollection = () => {
                                     fontWeight: 700,
                                   },
                                 }}
-                              />
-                            ) : null}
+                              />                            ) : null}
                           </Box>
-                        </Box>
-                      </ListItemButton>
+                        </Box>                      </ListItemButton>
                     );
-                  })}
+                  });
+                })()}
                 </List>
+                
+                {/* Pagination */}
+                {filteredStudents.length > studentsPerPage && (
+                  <Stack spacing={2} alignItems="center" sx={{ mt: 3, py: 2 }}>
+                    <Pagination 
+                      count={Math.ceil(filteredStudents.length / studentsPerPage)}
+                      page={currentPage}
+                      onChange={(event, value) => setCurrentPage(value)}
+                      color="primary"
+                      size="medium"
+                      showFirstButton 
+                      showLastButton
+                      sx={{
+                        '& .MuiPaginationItem-root': {
+                          fontSize: '0.875rem',
+                          minWidth: '32px',
+                          height: '32px',
+                        }
+                      }}
+                    />
+                    <Typography variant="caption" color="text.secondary">
+                      Showing {((currentPage - 1) * studentsPerPage) + 1} to {Math.min(currentPage * studentsPerPage, filteredStudents.length)} of {filteredStudents.length} students
+                    </Typography>
+                  </Stack>
+                )}
+                </>
               ) : (
                 <Typography
                   color="text.secondary"
                   sx={{ textAlign: "center", p: 1.5, fontSize: 13 }}
                 >
                   No students found
-                </Typography>
-              )}
+                </Typography>)}
             </Box>
-          )}
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        )}
 
-      {/* Selected Student Details */}
+        {/* Selected Student Details */}
       {selectedStudent && (
         <Grid container spacing={2}>
           {/* Student Information */}
@@ -795,11 +862,10 @@ const FeeCollection = () => {
                 )}
               </CardContent>
             </Card>
-          </Grid>
-        </Grid>
-      )}
+          </Grid>        </Grid>        )}
+        </Box>
+      </Box>
 
-      {/* Success Snackbar */}
       <Snackbar
         open={successMsg}
         autoHideDuration={3000}

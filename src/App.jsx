@@ -101,7 +101,7 @@ function LayoutWrapper({ children }) {
           fontFamily: theme.fontFamily,
           minHeight: "100vh",
           width: isMobile ? "100%" : "auto",
-          paddingTop: isMobile ? (isNavbarVisible ? "4rem" : "1rem") : "1rem", // Dynamic padding based on navbar visibility
+          paddingTop: isMobile ? (isNavbarVisible ? "0rem" : "1rem") : "0rem", // Dynamic padding based on navbar visibility
           paddingLeft: isMobile ? "0" : "1.25rem",
           paddingRight: isMobile ? "0" : "1.25rem",
         }}
