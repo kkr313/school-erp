@@ -279,19 +279,20 @@ const DuesCollection = () => {
     console.log("Saved Payload:", payload);
     setSuccessMsg(true);
   };
-
   return (
-    <Box sx={{ height: "100vh", display: "flex", flexDirection: "column" }}>
+    <Box sx={{ height: "100vh", display: "flex", flexDirection: "column", bgcolor: theme.formBg }}>
       {/* Sticky Header Section */}
       <Box
         sx={{
           position: "sticky",
           top: 0,
           zIndex: 1000,
+          bgcolor: theme.formBg,
           backdropFilter: "blur(8px)",
           pb: 2,
           px: { xs: 2, sm: 3 },
           pt: { xs: 2, sm: 3 },
+          borderBottom: "1px solid rgba(0,0,0,0.06)",
         }}
       >
         <Box sx={{ maxWidth: 1200, mx: "auto" }}>
@@ -301,14 +302,15 @@ const DuesCollection = () => {
             { label: "Dashboard", href: "/dashboard" },
             { label: "Collection", href: "/collection" },
           ]}
-        />
-
-        {/* Search Section */}
+        />        {/* Search Section */}
         <Card
           sx={{
             boxShadow: 0,
+            bgcolor: "rgba(255,255,255,0.9)",
+            backdropFilter: "blur(12px)",
+            border: "1px solid rgba(255,255,255,0.2)",
           }}
-        >          <CardContent sx={{ py: 1.5 }}>
+        ><CardContent sx={{ py: 1.5 }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1.25 }}>
               {/* Search icon that expands to input */}
               <IconButton
@@ -411,40 +413,76 @@ const DuesCollection = () => {
           </CardContent>
         </Card>
         </Box>
-      </Box>
-
-      {/* Scrollable Content Area */}
+      </Box>      {/* Scrollable Content Area */}
       <Box
         sx={{
           flex: 1,
           overflow: "auto",
+          bgcolor: theme.formBg,
+          // Ensure proper scrolling behavior
+          scrollBehavior: "smooth",
+          "&::-webkit-scrollbar": {
+            width: "6px",
+          },
+          "&::-webkit-scrollbar-track": {
+            background: "rgba(0,0,0,0.1)",
+            borderRadius: "3px",
+          },
+          "&::-webkit-scrollbar-thumb": {
+            background: "rgba(0,0,0,0.3)",
+            borderRadius: "3px",
+            "&:hover": {
+              background: "rgba(0,0,0,0.5)",
+            },
+          },
         }}
-      >
-        <Box sx={{ maxWidth: 1200, mx: "auto", px: { xs: 2, sm: 3 } }}>        {/* Search Results */}
+      >        <Box sx={{ maxWidth: 1200, mx: "auto", px: { xs: 2, sm: 3 }, pb: 3 }}>        {/* Search Results */}
         {searchText.trim() && (
-          <Card sx={{ mb: 2, boxShadow: 0 }}>
+          <Card sx={{ mb: 2, boxShadow: 0, bgcolor: "rgba(255,255,255,0.8)", backdropFilter: "blur(10px)" }}>
             <CardContent sx={{ py: 1.5 }}>
              
                 <Box
                 sx={{
-                  minHeight: { xs: 400, sm: 500 },
-                  maxHeight: { xs: 600, sm: 700 },
+                  minHeight: { xs: 300, sm: 400 },
+                  maxHeight: { xs: 500, sm: 600 },
                   borderRadius: 2,
                   p: { xs: 1.5, sm: 2.5 },
-                  bgcolor: "rgba(255,255,255,0.55)",
+                  bgcolor: "rgba(255,255,255,0.95)",
                   backdropFilter: "blur(10px)",
                   boxShadow: "0 12px 28px rgba(0,0,0,0.12)",
                   display: "flex",
                   flexDirection: "column",
+                  border: "1px solid rgba(0,0,0,0.08)",
                 }}
               >
                 {loading ? (
                   <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: 200 }}>
                     <CircularProgress size={24} />
-                  </Box>
-                ) : filteredStudents.length > 0 ? (
+                  </Box>                ) : filteredStudents.length > 0 ? (
                   <>
-                    <List dense disablePadding>
+                    <Box 
+                      sx={{ 
+                        flex: 1, 
+                        overflow: "auto",
+                        // Add proper scrolling with padding for last item
+                        pr: 1,
+                        "&::-webkit-scrollbar": {
+                          width: "6px",
+                        },
+                        "&::-webkit-scrollbar-track": {
+                          background: "rgba(0,0,0,0.05)",
+                          borderRadius: "3px",
+                        },
+                        "&::-webkit-scrollbar-thumb": {
+                          background: "rgba(0,0,0,0.2)",
+                          borderRadius: "3px",
+                          "&:hover": {
+                            background: "rgba(0,0,0,0.3)",
+                          },
+                        },
+                      }}
+                    >
+                      <List dense disablePadding sx={{ pb: 2 }}>
                       {(() => {
                         const startIndex = (currentPage - 1) * studentsPerPage;
                         const endIndex = startIndex + studentsPerPage;
@@ -459,18 +497,22 @@ const DuesCollection = () => {
                             <ListItemButton
                               key={student.id}
                               dense
-                              onClick={() => handleSelectStudent(student)}
-                              sx={{
+                              onClick={() => handleSelectStudent(student)}                              sx={{
                                 my: { xs: 0.4, sm: 0.6 },
                                 py: { xs: 0.75, sm: 1.1 },
                                 px: { xs: 1, sm: 1.25 },
                                 borderRadius: 2,
                                 border: "1px solid",
                                 borderColor: "divider",
-                                bgcolor: "rgba(255,255,255,0.65)",
+                                bgcolor: "rgba(255,255,255,0.85)",
                                 backdropFilter: "blur(10px)",
-                                "&:hover": { bgcolor: "rgba(255,255,255,0.85)" },
+                                "&:hover": { 
+                                  bgcolor: "rgba(255,255,255,0.95)",
+                                  transform: "translateY(-1px)",
+                                  boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                                },
                                 minHeight: { xs: "auto", sm: "unset" },
+                                transition: "all 0.2s ease",
                               }}
                             >                              <Box
                                 sx={{
@@ -669,14 +711,13 @@ const DuesCollection = () => {
                                 </Box>
                               </Box>
                             </ListItemButton>
-                          );
-                        });
+                          );                        });
                       })()}
                     </List>
-                    
-                    {/* Pagination */}
+                    </Box>
+                      {/* Pagination */}
                     {filteredStudents.length > studentsPerPage && (
-                      <Stack spacing={2} alignItems="center" sx={{ mt: 3, py: 2 }}>
+                      <Stack spacing={2} alignItems="center" sx={{ mt: 2, py: 2, px: 1 }}>
                         <Pagination 
                           count={Math.ceil(filteredStudents.length / studentsPerPage)}
                           page={currentPage}
@@ -690,22 +731,57 @@ const DuesCollection = () => {
                               fontSize: '0.875rem',
                               minWidth: '32px',
                               height: '32px',
+                              bgcolor: 'rgba(255,255,255,0.8)',
+                              '&:hover': {
+                                bgcolor: 'rgba(255,255,255,1)',
+                              },
+                              '&.Mui-selected': {
+                                bgcolor: 'primary.main',
+                                color: 'white',
+                                '&:hover': {
+                                  bgcolor: 'primary.dark',
+                                },
+                              },
                             }
                           }}
                         />
-                        <Typography variant="caption" color="text.secondary">
-                          Showing {((currentPage - 1) * studentsPerPage) + 1} to {Math.min(currentPage * studentsPerPage, filteredStudents.length)} of {filteredStudents.length} students
-                        </Typography>
+                        <Typography variant="caption" color="text.secondary" sx={{ 
+                          textAlign: 'center',
+                          bgcolor: 'rgba(255,255,255,0.7)',
+                          px: 2,
+                          py: 0.5,
+                          borderRadius: 1,
+                          backdropFilter: 'blur(6px)',
+                        }}>
+                          Showing {((currentPage - 1) * studentsPerPage) + 1} to {Math.min(currentPage * studentsPerPage, filteredStudents.length)} of {filteredStudents.length} students                        </Typography>
                       </Stack>
                     )}
                   </>
                 ) : (
-                  <Typography
-                    color="text.secondary"
-                    sx={{ textAlign: "center", p: 1.5, fontSize: 13 }}
-                  >
-                    No students with dues found
-                  </Typography>
+                  <Box sx={{ 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    py: 4,
+                    px: 2,
+                  }}>
+                    <Typography
+                      color="text.secondary"
+                      sx={{ 
+                        textAlign: "center", 
+                        fontSize: 14,
+                        bgcolor: 'rgba(255,255,255,0.8)',
+                        px: 3,
+                        py: 1.5,
+                        borderRadius: 2,
+                        backdropFilter: 'blur(6px)',
+                        border: '1px solid rgba(0,0,0,0.05)',
+                      }}
+                    >
+                      No students with dues found
+                    </Typography>
+                  </Box>
                 )}
               </Box>
             </CardContent>
@@ -714,10 +790,15 @@ const DuesCollection = () => {
 
         {/* ...existing student details and fee collection sections... */}
         {selectedStudent && (
-          <Grid container spacing={2}>
-            {/* Student Information */}
+          <Grid container spacing={2}>            {/* Student Information */}
             <Grid item xs={12} md={5}>
-              <Card sx={{ border: "1px solid", borderColor: "divider" }}>
+              <Card sx={{ 
+                border: "1px solid", 
+                borderColor: "divider",
+                bgcolor: "rgba(255,255,255,0.9)",
+                backdropFilter: "blur(12px)",
+                boxShadow: "0 4px 16px rgba(0,0,0,0.08)",
+              }}>
                 <CardContent sx={{ p: 2 }}>
                   <Box
                     sx={{
@@ -785,11 +866,15 @@ const DuesCollection = () => {
                   </Box>
                 </CardContent>
               </Card>
-            </Grid>
-
-            {/* Dues Collection */}
+            </Grid>            {/* Dues Collection */}
             <Grid item xs={12} md={7}>
-              <Card sx={{ border: "1px solid", borderColor: "divider" }}>
+              <Card sx={{ 
+                border: "1px solid", 
+                borderColor: "divider",
+                bgcolor: "rgba(255,255,255,0.9)",
+                backdropFilter: "blur(12px)",
+                boxShadow: "0 4px 16px rgba(0,0,0,0.08)",
+              }}>
                 <CardContent sx={{ p: 2 }}>
                   <Box
                     sx={{

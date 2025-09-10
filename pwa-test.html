@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PWA Test - School ERP</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .card {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .status {
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .success { background-color: rgba(76, 175, 80, 0.3); }
+        .error { background-color: rgba(244, 67, 54, 0.3); }
+        .warning { background-color: rgba(255, 152, 0, 0.3); }
+        button {
+            background: #1976d2;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #1565c0;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .info-item {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        pre {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 8px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚀 School ERP - PWA Test Dashboard</h1>
+    
+    <div class="card">
+        <h2>📱 PWA Features Status</h2>
+        <div id="pwa-status"></div>
+        
+        <div class="info-grid">
+            <div class="info-item">
+                <strong>Service Worker</strong>
+                <div id="sw-status">Checking...</div>
+            </div>
+            <div class="info-item">
+                <strong>Manifest</strong>
+                <div id="manifest-status">Checking...</div>
+            </div>
+            <div class="info-item">
+                <strong>Install Prompt</strong>
+                <div id="install-status">Checking...</div>
+            </div>
+            <div class="info-item">
+                <strong>Network Status</strong>
+                <div id="network-status">Checking...</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>🔧 PWA Controls</h2>
+        <button onclick="checkPWAFeatures()">🔍 Refresh Status</button>
+        <button onclick="testServiceWorker()">⚙️ Test Service Worker</button>
+        <button onclick="testOfflineMode()">📱 Test Offline</button>
+        <button onclick="clearCache()">🗑️ Clear Cache</button>
+        <button onclick="showInstallPrompt()">📥 Show Install Prompt</button>
+    </div>
+
+    <div class="card">
+        <h2>📊 Technical Details</h2>
+        <div id="technical-details">Loading...</div>
+    </div>
+
+    <div class="card">
+        <h2>🧪 Test Results</h2>
+        <div id="test-results"></div>
+    </div>
+
+    <script>
+        let deferredPrompt;
+        
+        // Check PWA features on load
+        window.addEventListener('load', () => {
+            checkPWAFeatures();
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            // Listen for install prompt
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                updateStatus('install-status', 'Available', 'success');
+                logTest('Install prompt captured successfully');
+            });
+
+            // Listen for app installation
+            window.addEventListener('appinstalled', () => {
+                updateStatus('install-status', 'Installed', 'success');
+                logTest('App installed successfully');
+            });
+
+            // Network status
+            window.addEventListener('online', () => {
+                updateStatus('network-status', 'Online', 'success');
+                logTest('Network: Online');
+            });
+
+            window.addEventListener('offline', () => {
+                updateStatus('network-status', 'Offline', 'warning');
+                logTest('Network: Offline');
+            });
+        }
+
+        async function checkPWAFeatures() {
+            // Check Service Worker
+            if ('serviceWorker' in navigator) {
+                try {
+                    const registration = await navigator.serviceWorker.getRegistration();
+                    if (registration) {
+                        updateStatus('sw-status', 'Active', 'success');
+                        logTest('Service Worker: Registered and active');
+                    } else {
+                        updateStatus('sw-status', 'Not Found', 'error');
+                        logTest('Service Worker: Not found');
+                    }
+                } catch (error) {
+                    updateStatus('sw-status', 'Error', 'error');
+                    logTest('Service Worker Error: ' + error.message);
+                }
+            } else {
+                updateStatus('sw-status', 'Not Supported', 'error');
+                logTest('Service Worker: Not supported by browser');
+            }
+
+            // Check Manifest
+            try {
+                const manifestElement = document.querySelector('link[rel="manifest"]');
+                if (manifestElement) {
+                    const response = await fetch(manifestElement.href);
+                    if (response.ok) {
+                        const manifest = await response.json();
+                        updateStatus('manifest-status', 'Valid', 'success');
+                        logTest('Manifest: Valid and accessible');
+                        displayTechnicalDetails(manifest);
+                    } else {
+                        updateStatus('manifest-status', 'Invalid', 'error');
+                        logTest('Manifest: HTTP error ' + response.status);
+                    }
+                } else {
+                    updateStatus('manifest-status', 'Missing', 'error');
+                    logTest('Manifest: Link tag not found');
+                }
+            } catch (error) {
+                updateStatus('manifest-status', 'Error', 'error');
+                logTest('Manifest Error: ' + error.message);
+            }
+
+            // Check install status
+            if (window.matchMedia('(display-mode: standalone)').matches) {
+                updateStatus('install-status', 'Installed', 'success');
+                logTest('App: Running in standalone mode');
+            } else if (deferredPrompt) {
+                updateStatus('install-status', 'Available', 'warning');
+                logTest('Install prompt: Available');
+            } else {
+                updateStatus('install-status', 'Pending', 'warning');
+                logTest('Install prompt: Waiting...');
+            }
+
+            // Network status
+            updateStatus('network-status', navigator.onLine ? 'Online' : 'Offline', 
+                        navigator.onLine ? 'success' : 'warning');
+        }
+
+        function updateStatus(elementId, text, type) {
+            const element = document.getElementById(elementId);
+            element.textContent = text;
+            element.className = type;
+        }
+
+        function logTest(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const resultsDiv = document.getElementById('test-results');
+            resultsDiv.innerHTML += `<div class="status">[${timestamp}] ${message}</div>`;
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+
+        function displayTechnicalDetails(manifest) {
+            const details = {
+                'App Name': manifest.name,
+                'Short Name': manifest.short_name,
+                'Theme Color': manifest.theme_color,
+                'Background Color': manifest.background_color,
+                'Display Mode': manifest.display,
+                'Start URL': manifest.start_url,
+                'Icons Count': manifest.icons ? manifest.icons.length : 0,
+                'User Agent': navigator.userAgent,
+                'Screen Resolution': `${screen.width}x${screen.height}`,
+                'Viewport': `${window.innerWidth}x${window.innerHeight}`,
+                'Color Depth': screen.colorDepth + ' bits',
+                'Pixel Ratio': window.devicePixelRatio
+            };
+
+            let html = '<pre>';
+            for (const [key, value] of Object.entries(details)) {
+                html += `${key}: ${value}\n`;
+            }
+            html += '</pre>';
+
+            document.getElementById('technical-details').innerHTML = html;
+        }
+
+        async function testServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                try {
+                    const registration = await navigator.serviceWorker.ready;
+                    logTest('Service Worker: Ready and active');
+                    
+                    // Test message passing
+                    if (registration.active) {
+                        registration.active.postMessage({
+                            type: 'TEST_MESSAGE',
+                            data: 'Hello from PWA test page'
+                        });
+                        logTest('Message sent to Service Worker');
+                    }
+                } catch (error) {
+                    logTest('Service Worker Test Failed: ' + error.message);
+                }
+            } else {
+                logTest('Service Worker not supported');
+            }
+        }
+
+        async function testOfflineMode() {
+            try {
+                // Test cache functionality
+                const testUrl = window.location.href;
+                const cache = await caches.open('test-cache');
+                await cache.add(testUrl);
+                logTest('Offline Test: Cache write successful');
+                
+                const cachedResponse = await cache.match(testUrl);
+                if (cachedResponse) {
+                    logTest('Offline Test: Cache read successful');
+                } else {
+                    logTest('Offline Test: Cache read failed');
+                }
+            } catch (error) {
+                logTest('Offline Test Failed: ' + error.message);
+            }
+        }
+
+        async function clearCache() {
+            try {
+                const cacheNames = await caches.keys();
+                await Promise.all(
+                    cacheNames.map(cacheName => caches.delete(cacheName))
+                );
+                logTest(`Cache cleared: ${cacheNames.length} caches deleted`);
+            } catch (error) {
+                logTest('Clear Cache Failed: ' + error.message);
+            }
+        }
+
+        async function showInstallPrompt() {
+            if (deferredPrompt) {
+                try {
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+                    logTest(`Install Prompt: User ${outcome}`);
+                    deferredPrompt = null;
+                } catch (error) {
+                    logTest('Install Prompt Error: ' + error.message);
+                }
+            } else {
+                logTest('Install Prompt: Not available (may already be installed)');
+            }
+        }
+
+        // Initial status
+        logTest('PWA Test Dashboard loaded');
+    </script>
+</body>
+</html>
