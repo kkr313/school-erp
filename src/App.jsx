@@ -15,6 +15,11 @@ import Dashboard from "./components/Dashboard/Dashboard";
 import Admission from "./components/Admission";
 import Login from "./components/Login";
 
+// PWA Components
+import PWAInstallPrompt from "./components/PWA/PWAInstallPrompt";
+import PWAUpdateNotifier from "./components/PWA/PWAUpdateNotifier";
+import OfflineNotification from "./components/PWA/OfflineNotification";
+
 import StudentEnquiry from "./components/StudentEnquiry";
 import Expense from "./components/Expense";
 import ClassMaster from "./components/Master/ClassMaster";
@@ -288,6 +293,12 @@ function App() {
     >
       <HistoryRouter history={customHistory}>
         {isAuthenticated && <InitSchoolMaster />}
+        
+        {/* PWA Components */}
+        <PWAInstallPrompt />
+        <PWAUpdateNotifier />
+        <OfflineNotification />
+        
         <LayoutWrapper>
           <Routes>
             <Route path="/" element={<Navigate to="/dashboard" />} />
