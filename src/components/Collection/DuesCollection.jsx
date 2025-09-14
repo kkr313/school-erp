@@ -32,7 +32,7 @@ import {
   InputLabel,
 } from "@mui/material";
 import { Search, Person, Receipt, Payment, Close } from "@mui/icons-material";
-import { useApi } from "../../utils/useApi";
+import { api } from "../../api/index.js";
 import GetFeeDetails from "../Dropdown/GetFeeDetails";
 import { useTheme } from "../../context/ThemeContext";
 import CustomBreadcrumb from "../../utils/CustomBreadcrumb";
@@ -54,7 +54,8 @@ const DuesCollection = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [studentsPerPage, setStudentsPerPage] = useState(10);
 
-  const { callApi, loading, error } = useApi();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(false);
 
   const { theme, fontColor } = useTheme();
@@ -146,15 +147,21 @@ const DuesCollection = () => {
   // Fetch students with dues
   useEffect(() => {
     const fetchStudents = async () => {
-      const data = await callApi("/api/GetStudents/GetFilterDuesFeesStudents", {
-        trackingId: "string",
-      });
-      if (data) {
-        setStudents(data);
+      setLoading(true);
+      try {
+        const data = await api.students.getDuesFeesStudents();
+        if (data) {
+          setStudents(data);
+        }
+      } catch (err) {
+        setError(err.message);
+        console.error('Failed to fetch students:', err);
+      } finally {
+        setLoading(false);
       }
     };
     fetchStudents();
-  }, [callApi]);
+  }, []);
 
   // Filter students
   useEffect(() => {
@@ -188,22 +195,21 @@ const DuesCollection = () => {
   };
 
   const fetchReceiptNumber = async (admissionId) => {
-    // Try dues billing endpoint first, then fallback to monthly billing
-    let data = await callApi(
-      "/api/DuesBillingFees/GetBillingReceiptNumber",
-      { admissionId }
-    );
+    try {
+      // Try dues billing endpoint first, then fallback to monthly billing
+      let data = await api.dues.getBillingReceiptNumber(admissionId);
 
-    if (!data || !data.receiptNumber) {
-      data = await callApi(
-        "/api/MonthlyBillingFees/GetBillingReceiptNumber",
-        { admissionId }
-      );
-    }
+      if (!data || !data.receiptNumber) {
+        data = await api.fees.getBillingReceiptNumber(admissionId);
+      }
 
-    if (data && data.receiptNumber) {
-      setReceiptNumber(data.receiptNumber);
-    } else {
+      if (data && data.receiptNumber) {
+        setReceiptNumber(data.receiptNumber);
+      } else {
+        setReceiptNumber("N/A");
+      }
+    } catch (err) {
+      console.error('Failed to fetch receipt number:', err);
       setReceiptNumber("N/A");
     }
   };

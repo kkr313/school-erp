@@ -4,23 +4,30 @@ import { FormControl } from "@mui/material";
 import { useTheme } from "../../context/ThemeContext";
 import FilledAutocomplete from "../../utils/FilledAutocomplete";
 import { Clear, ArrowDropDown } from "@mui/icons-material";
-import { useApi } from "../../utils/useApi";
+import { masterApi } from "../../api/modules/masterApi.js";
 
 const GetState = ({ value, onChange, label = "State", error = false, helperText = "" }) => {
   const { fontColor } = useTheme();
-  const { callApi } = useApi();
   const [stateOptions, setStateOptions] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchStates = async () => {
-      const data = await callApi("/api/GetStateDistrictList/GetStateDistrictList", {});
-      if (data) {
-        const states = data.map((s) => ({
-          label: s.stateName,
-          value: s.stateName,
-          districts: s.districtNameList || [],
-        }));
-        setStateOptions(states);
+      setLoading(true);
+      try {
+        const data = await masterApi.getStateDistrictList();
+        if (data) {
+          const states = data.map((s) => ({
+            label: s.stateName,
+            value: s.stateName,
+            districts: s.districtNameList || [],
+          }));
+          setStateOptions(states);
+        }
+      } catch (error) {
+        console.error('Failed to fetch states:', error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchStates();
@@ -36,6 +43,7 @@ const GetState = ({ value, onChange, label = "State", error = false, helperText 
         options={stateOptions}
         error={error}
         helperText={helperText}
+        loading={loading}
         getOptionLabel={(option) => option?.label || ""}
         isOptionEqualToValue={(option, val) => option?.value === val?.value}
         popupIcon={<ArrowDropDown sx={{ color: fontColor.paper }} />}

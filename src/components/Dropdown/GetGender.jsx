@@ -3,7 +3,7 @@ import { FormControl } from "@mui/material";
 import { useTheme } from "../../context/ThemeContext";
 import FilledAutocomplete from "../../utils/FilledAutocomplete";
 import { Clear, ArrowDropDown } from "@mui/icons-material";
-import { useApi } from "../../utils/useApi"; // custom hook
+import { masterApi } from "../../api/modules/masterApi.js";
 
 const GetGender = ({
   onGenderChange,
@@ -15,31 +15,38 @@ const GetGender = ({
 }) => {
   const { fontColor } = useTheme();
   const [genderOptions, setGenderOptions] = useState([]);
-  const { callApi } = useApi();
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchGenders = async () => {
-      const data = await callApi("/api/GetGenders/GetGenders", {});
-      if (data && data.genderName) {
-        const formatted = data.genderName.map((g) => ({
-          label: g,
-          value: g,
-        }));
+      setLoading(true);
+      try {
+        const data = await masterApi.getGenders();
+        if (data && data.genderName) {
+          const formatted = data.genderName.map((g) => ({
+            label: g,
+            value: g,
+          }));
 
-        let options = formatted;
-        if (showSelectAll) {
-          options = [{ label: "Select All", value: "ALL" }, ...formatted];
-          if (!value) {
-            onGenderChange &&
-              onGenderChange({ label: "Select All", value: "ALL", all: formatted });
+          let options = formatted;
+          if (showSelectAll) {
+            options = [{ label: "Select All", value: "ALL" }, ...formatted];
+            if (!value) {
+              onGenderChange &&
+                onGenderChange({ label: "Select All", value: "ALL", all: formatted });
+            }
           }
+          setGenderOptions(options);
         }
-        setGenderOptions(options);
+      } catch (error) {
+        console.error('Failed to fetch genders:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchGenders();
-  }, [callApi, showSelectAll]);
+  }, [showSelectAll]);
 
   const handleChange = (e, newValue) => {
     if (showSelectAll && newValue?.value === "ALL") {
@@ -63,6 +70,7 @@ const GetGender = ({
         required
         error={error}
         helperText={helperText}
+        loading={loading}
         getOptionLabel={(option) => option?.label || ""}
         isOptionEqualToValue={(option, val) => option?.value === val?.value}
         popupIcon={<ArrowDropDown sx={{ color: fontColor.paper }} />}

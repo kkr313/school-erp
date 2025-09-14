@@ -4,7 +4,7 @@ import { FormControl } from "@mui/material";
 import { useTheme } from "../../context/ThemeContext";
 import FilledAutocomplete from "../../utils/FilledAutocomplete";
 import { Clear, ArrowDropDown } from "@mui/icons-material";
-import { useApi } from "../../utils/useApi"; // custom hook
+import { masterApi } from "../../api/modules/masterApi.js";
 
 const GetReligion = ({
   onReligionChange,
@@ -16,37 +16,42 @@ const GetReligion = ({
 }) => {
   const { fontColor } = useTheme();
   const [religionOptions, setReligionOptions] = useState([]);
-  const { callApi } = useApi();
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchReligions = async () => {
-      const data = await callApi("/api/GetReligions/GetReligions", {
-        trackingID: "string",
-      });
+      setLoading(true);
+      try {
+        const data = await masterApi.getReligions();
 
-      if (data) {
-        const formatted = data.map((r) => ({
-          label: r.name,
-          value: r.id,
-          isMinority: r.minorityGroups,
-        }));
+        if (data) {
+          const formatted = data.map((r) => ({
+            label: r.name,
+            value: r.id,
+            isMinority: r.minorityGroups,
+          }));
 
-        // ✅ Add Select All only if enabled
-        const options = showSelectAll
-          ? [{ label: "Select All", value: "ALL" }, ...formatted]
-          : formatted;
+          // ✅ Add Select All only if enabled
+          const options = showSelectAll
+            ? [{ label: "Select All", value: "ALL" }, ...formatted]
+            : formatted;
 
-        setReligionOptions(options);
+          setReligionOptions(options);
 
-        // ✅ default "ALL" select only if enabled & nothing is set
-        if (showSelectAll && !value) {
-          onReligionChange &&
-            onReligionChange({
-              label: "Select All",
-              value: "ALL",
-              allReligions: formatted.map((r) => r.value),
-            });
+          // ✅ default "ALL" select only if enabled & nothing is set
+          if (showSelectAll && !value) {
+            onReligionChange &&
+              onReligionChange({
+                label: "Select All",
+                value: "ALL",
+                allReligions: formatted.map((r) => r.value),
+              });
+          }
         }
+      } catch (error) {
+        console.error('Failed to fetch religions:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -79,6 +84,7 @@ const GetReligion = ({
         required
         error={error}
         helperText={helperText}
+        loading={loading}
         getOptionLabel={(option) => option?.label || ""}
         isOptionEqualToValue={(option, val) => option?.value === val?.value}
         popupIcon={<ArrowDropDown sx={{ color: fontColor.paper }} />}

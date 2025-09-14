@@ -4,7 +4,7 @@ import { FormControl } from "@mui/material";
 import { useTheme } from "../../context/ThemeContext";
 import FilledAutocomplete from "../../utils/FilledAutocomplete";
 import { Clear, ArrowDropDown } from "@mui/icons-material";
-import { useApi } from "../../utils/useApi"; // <-- import custom hook
+import { masterApi } from "../../api/modules/masterApi.js";
 
 const Class = ({
   onClassChange,
@@ -15,20 +15,24 @@ const Class = ({
 }) => {
   const { fontColor } = useTheme();
   const [classOptions, setClassOptions] = useState([]);
-  const { callApi } = useApi();
+  const [loading, setLoading] = useState(false);
   
   useEffect(() => {
     const fetchClasses = async () => {
-      const data = await callApi("/api/GetClass/GetClasses", {
-        trackingID: "string",
-      });
-
-      if (data) {
-        const formatted = data.map((cls) => ({
-          label: cls.className,
-          value: cls.id,
-        }));
-        setClassOptions(formatted);
+      setLoading(true);
+      try {
+        const data = await masterApi.getClasses();
+        if (data) {
+          const formatted = data.map((cls) => ({
+            label: cls.className,
+            value: cls.id,
+          }));
+          setClassOptions(formatted);
+        }
+      } catch (error) {
+        console.error('Failed to fetch classes:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -50,6 +54,7 @@ const Class = ({
         required
         error={error}
         helperText={helperText}
+        loading={loading}
         getOptionLabel={(option) => option?.label || ""}
         isOptionEqualToValue={(option, val) => option?.value === val?.value}
         popupIcon={<ArrowDropDown sx={{ color: fontColor.paper }} />}

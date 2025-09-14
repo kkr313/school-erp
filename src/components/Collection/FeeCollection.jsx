@@ -32,7 +32,7 @@ import {
   InputLabel,
 } from "@mui/material";
 import { Search, Person, Receipt, Payment, Close } from "@mui/icons-material";
-import { useApi } from "../../utils/useApi";
+import { api } from "../../api/index.js";
 import GetFeeDetails from "../Dropdown/GetFeeDetails";
 import { useTheme } from "../../context/ThemeContext";
 import CustomBreadcrumb from "../../utils/CustomBreadcrumb";
@@ -49,7 +49,8 @@ const FeeCollection = () => {
     new Date().toISOString().split("T")[0]
   );
 
-  const { callApi, loading, error } = useApi();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(false);
 
   const { theme, fontColor } = useTheme();
@@ -96,16 +97,21 @@ const FeeCollection = () => {
   // Fetch all students
   useEffect(() => {
     const fetchStudents = async () => {
-      const data = await callApi(
-        "/api/GetStudents/GetFilterMonthlyFeesStudents",
-        { trackingId: "string" }
-      );
-      if (data) {
-        setStudents(data);
+      setLoading(true);
+      try {
+        const data = await api.students.getMonthlyFeesStudents();
+        if (data) {
+          setStudents(data);
+        }
+      } catch (err) {
+        setError(err.message);
+        console.error('Failed to fetch students:', err);
+      } finally {
+        setLoading(false);
       }
     };
     fetchStudents();
-  }, [callApi]);
+  }, []);
 
   // Filter students
   useEffect(() => {
@@ -139,13 +145,15 @@ const FeeCollection = () => {
   };
 
   const fetchReceiptNumber = async (admissionId) => {
-    const data = await callApi(
-      "/api/MonthlyBillingFees/GetBillingReceiptNumber",
-      { admissionId }
-    );
-    if (data && data.receiptNumber) {
-      setReceiptNumber(data.receiptNumber);
-    } else {
+    try {
+      const data = await api.fees.getBillingReceiptNumber(admissionId);
+      if (data && data.receiptNumber) {
+        setReceiptNumber(data.receiptNumber);
+      } else {
+        setReceiptNumber("N/A");
+      }
+    } catch (err) {
+      console.error('Failed to fetch receipt number:', err);
       setReceiptNumber("N/A");
     }
   };

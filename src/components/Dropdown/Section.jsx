@@ -3,7 +3,7 @@ import { FormControl } from "@mui/material";
 import { useTheme } from "../../context/ThemeContext";
 import FilledAutocomplete from "../../utils/FilledAutocomplete";
 import { Clear, ArrowDropDown } from "@mui/icons-material";
-import { useApi } from "../../utils/useApi"; // custom hook
+import { masterApi } from "../../api/modules/masterApi.js";
 
 const Section = ({
   classId,
@@ -16,7 +16,7 @@ const Section = ({
 }) => {
   const { fontColor } = useTheme();
   const [sectionOptions, setSectionOptions] = useState([]);
-  const { callApi } = useApi();
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!classId) {
@@ -25,36 +25,41 @@ const Section = ({
     }
 
     const fetchSections = async () => {
-      const data = await callApi("/api/GetClass/GetClassSection", {
-        trackingID: "string",
-      });
+      setLoading(true);
+      try {
+        const data = await masterApi.getClassSections(classId);
 
-      if (data) {
-        const selectedClass = data.find((cls) => cls.classId === classId);
-        if (selectedClass) {
-          // ✅ format with N/A handling
-          const formatted = selectedClass.sections.map((sec) => ({
-            label: sec === "N/A" ? "N/A" : sec,
-            value: sec === "N/A" ? "N/A" : sec,
-          }));
+        if (data) {
+          const selectedClass = data.find((cls) => cls.classId === classId);
+          if (selectedClass) {
+            // ✅ format with N/A handling
+            const formatted = selectedClass.sections.map((sec) => ({
+              label: sec === "N/A" ? "N/A" : sec,
+              value: sec === "N/A" ? "N/A" : sec,
+            }));
 
-          // ✅ Add Select All only if showSelectAll = true
-          const options = showSelectAll
-            ? [{ label: "Select All", value: "ALL" }, ...formatted]
-            : formatted;
+            // ✅ Add Select All only if showSelectAll = true
+            const options = showSelectAll
+              ? [{ label: "Select All", value: "ALL" }, ...formatted]
+              : formatted;
 
-          setSectionOptions(options);
+            setSectionOptions(options);
 
-          // ✅ default "ALL" select only if enabled & nothing is set
-          if (showSelectAll && !value) {
-            onSectionChange &&
-              onSectionChange({
-                label: "Select All",
-                value: "ALL",
-                allSections: formatted.map((s) => s.value),
-              });
+            // ✅ default "ALL" select only if enabled & nothing is set
+            if (showSelectAll && !value) {
+              onSectionChange &&
+                onSectionChange({
+                  label: "Select All",
+                  value: "ALL",
+                  allSections: formatted.map((s) => s.value),
+                });
+            }
           }
         }
+      } catch (error) {
+        console.error('Failed to fetch sections:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -83,6 +88,7 @@ const Section = ({
         required
         error={error}
         helperText={helperText}
+        loading={loading}
         getOptionLabel={(option) => option?.label || ""}
         isOptionEqualToValue={(option, val) => option?.value === val?.value}
         popupIcon={<ArrowDropDown sx={{ color: fontColor.paper }} />}

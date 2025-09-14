@@ -4,7 +4,7 @@ import { FormControl } from "@mui/material";
 import { useTheme } from "../../context/ThemeContext";
 import FilledAutocomplete from "../../utils/FilledAutocomplete";
 import { Clear, ArrowDropDown } from "@mui/icons-material";
-import { useApi } from "../../utils/useApi"; // <-- custom hook
+import { masterApi } from "../../api/modules/masterApi.js";
 
 const GetMonthList = ({
   onMonthChange,
@@ -15,20 +15,25 @@ const GetMonthList = ({
 }) => {
   const { fontColor } = useTheme();
   const [monthOptions, setMonthOptions] = useState([]);
-  const { callApi } = useApi();
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchMonths = async () => {
-      const data = await callApi("/api/GetMonths/GetMonths", {
-        trackingID: "string",
-      });
+      setLoading(true);
+      try {
+        const data = await masterApi.getMonths();
 
-      if (data) {
-        const formatted = data.map((m) => ({
-          label: `${m.monthName} ${m.year}`,
-          value: m.id,
-        }));
-        setMonthOptions(formatted);
+        if (data) {
+          const formatted = data.map((m) => ({
+            label: `${m.monthName} ${m.year}`,
+            value: m.id,
+          }));
+          setMonthOptions(formatted);
+        }
+      } catch (error) {
+        console.error('Failed to fetch months:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -50,6 +55,7 @@ const GetMonthList = ({
         required
         error={error}
         helperText={helperText}
+        loading={loading}
         getOptionLabel={(option) => option?.label || ""}
         isOptionEqualToValue={(option, val) => option?.value === val?.value}
         popupIcon={<ArrowDropDown sx={{ color: fontColor.paper }} />}

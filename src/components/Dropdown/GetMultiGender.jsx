@@ -3,7 +3,7 @@ import { FormControl, Checkbox, ListItemText, Chip } from "@mui/material";
 import { useTheme } from "../../context/ThemeContext";
 import FilledAutocomplete from "../../utils/FilledAutocomplete";
 import { Clear, ArrowDropDown } from "@mui/icons-material";
-import { useApi } from "../../utils/useApi"; // custom hook
+import { masterApi } from "../../api/modules/masterApi.js";
 
 const GetMultiGender = ({
   onGenderChange,
@@ -14,24 +14,31 @@ const GetMultiGender = ({
 }) => {
   const { fontColor } = useTheme();
   const [genderOptions, setGenderOptions] = useState([]);
-  const { callApi } = useApi();
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchGenders = async () => {
-      const data = await callApi("/api/GetGenders/GetGenders", {});
-      if (data && data.genderName) {
-        const formatted = data.genderName.map((g) => ({
-          label: g,
-          value: g,
-        }));
+      setLoading(true);
+      try {
+        const data = await masterApi.getGenders();
+        if (data && data.genderName) {
+          const formatted = data.genderName.map((g) => ({
+            label: g,
+            value: g,
+          }));
 
-        // ✅ Upar "Select All" option add kar diya
-        setGenderOptions([{ label: "Select All", value: "ALL" }, ...formatted]);
+          // ✅ Upar "Select All" option add kar diya
+          setGenderOptions([{ label: "Select All", value: "ALL" }, ...formatted]);
+        }
+      } catch (error) {
+        console.error('Failed to fetch genders:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchGenders();
-  }, [callApi]);
+  }, []);
 
   const handleChange = (e, newValue) => {
     const allOption = genderOptions.find((opt) => opt.value === "ALL");

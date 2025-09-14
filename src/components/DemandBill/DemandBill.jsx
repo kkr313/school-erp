@@ -29,7 +29,7 @@ import DemandBillPrintView from "../PrintPDF/DemandBillPrintView";
 import { useTheme } from "../../context/ThemeContext";
 import FilledAutocomplete from "../../utils/FilledAutocomplete";
 import { getBaseUrlBySchoolCode } from "../../utils/schoolBaseUrls";
-import { useApi } from "../../utils/useApi";
+import { api } from "../../api/index.js";
 import GetStudentType from "../Dropdown/GetStudentType";
 import GetStudentStatus from "../Dropdown/GetStudentStatus";
 import GetSchoolPeriod from "../Dropdown/GetSchoolPeriod";
@@ -51,7 +51,8 @@ const DemandBill = () => {
   const [isBookBilling, setIsBookBilling] = useState(false);
   const [isDressBilling, setIsDressBilling] = useState(false);
   const { printMode, printRef, handlePrint } = usePrint();
-  const { callApi } = useApi();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const [studentType, setStudentType] = useState([]);
   const [studentStatus, setStudentStatus] = useState([
@@ -114,10 +115,7 @@ const DemandBill = () => {
 
       console.log("➡️ Sending filter body:", filterBody);
 
-      const data = await callApi(
-        "/api/GetStudents/GetFilterStudents",
-        filterBody
-      );
+      const data = await api.students.getFilteredStudents(filterBody);
 
       if (data && data.length > 0) {
         setFilteredStudents(data);
@@ -158,15 +156,12 @@ const DemandBill = () => {
     setOriginalDemandData([]);
 
     try {
-      const data = await callApi(
-        "/api/GetStudentDemands/GetStudentDemandsByIds",
-        {
-          admIds: selectedStudents,
-          uptoMonthId: month.value,
-          isBookBilling,
-          isDressBilling,
-        }
-      );
+      const data = await api.dues.getStudentDemandsByIds({
+        admIds: selectedStudents,
+        uptoMonthId: month.value,
+        isBookBilling,
+        isDressBilling,
+      });
 
       if (data) {
         console.log("Result size:", data.length);
