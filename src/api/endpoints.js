@@ -14,10 +14,10 @@ export const API_ENDPOINTS = {
 
   // Student Management
   STUDENTS: {
-    GET_FILTER_STUDENTS: '/api/GetStudents/GetFilterStudents',
-    GET_MONTHLY_FEES_STUDENTS: '/api/GetStudents/GetFilterMonthlyFeesStudents',
-    GET_DUES_FEES_STUDENTS: '/api/GetStudents/GetFilterDuesFeesStudents',
-    GET_STUDENT_DETAILS: '/api/GetStudents/GetStudentDetails',
+    GET_FILTER_STUDENTS: 'https://teo-vivekanadbihar.co.in/TEO-School-API/api/GetStudents/GetFilterStudents',
+    GET_MONTHLY_FEES_STUDENTS: 'https://teo-vivekanadbihar.co.in/TEO-School-API/api/GetStudents/GetFilterMonthlyFeesStudents',
+    GET_DUES_FEES_STUDENTS: 'https://teo-vivekanadbihar.co.in/TEO-School-API/api/GetStudents/GetFilterDuesFeesStudents',
+    GET_STUDENT_DETAILS: 'https://teo-vivekanadbihar.co.in/TEO-School-API/api/GetStudents/GetStudentDetails',
     ADD_STUDENT: '/api/Students/AddStudent',
     UPDATE_STUDENT: '/api/Students/UpdateStudent',
     DELETE_STUDENT: '/api/Students/DeleteStudent',
@@ -34,18 +34,17 @@ export const API_ENDPOINTS = {
 
   // Fee Management
   FEES: {
-    GET_MONTHLY_BILLING_FEES: '/api/MonthlyBillingFees/GetMonthlyBillingFees',
-    GET_BILLING_RECEIPT_NUMBER:
-      '/api/MonthlyBillingFees/GetBillingReceiptNumber',
-    PROCESS_FEE_PAYMENT: '/api/Fees/ProcessPayment',
+    GET_MONTHLY_BILLING_FEES: 'https://teo-vivekanadbihar.co.in/TEO-School-API/api/MonthlyBillingFees/GetMonthlyBillingFees',
+    GET_BILLING_RECEIPT_NUMBER: 'https://teo-vivekanadbihar.co.in/TEO-School-API/api/MonthlyBillingFees/GetBillingReceiptNumber',
+    PROCESS_FEE_PAYMENT: 'https://teo-vivekanadbihar.co.in/TEO-School-API/api/Fees/ProcessPayment',
     GET_FEE_STRUCTURE: '/api/Fees/GetFeeStructure',
   },
 
   // Dues Management
   DUES: {
-    GET_BILLING_RECEIPT_NUMBER: '/api/DuesBillingFees/GetBillingReceiptNumber',
-    GET_STUDENT_DEMANDS: '/api/GetStudentDemands/GetStudentDemandsByIds',
-    PROCESS_DUES_PAYMENT: '/api/Dues/ProcessPayment',
+    GET_BILLING_RECEIPT_NUMBER: 'https://teo-vivekanadbihar.co.in/TEO-School-API/api/DuesBillingFees/GetBillingReceiptNumber',
+    GET_STUDENT_DEMANDS: 'https://teo-vivekanadbihar.co.in/TEO-School-API/api/GetStudentDemands/GetStudentDemandsByIds',
+    PROCESS_DUES_PAYMENT: 'https://teo-vivekanadbihar.co.in/TEO-School-API/api/Dues/ProcessPayment',
   },
 
   // Master Data
@@ -58,6 +57,8 @@ export const API_ENDPOINTS = {
 
     // Location
     GET_STATE_DISTRICT_LIST: '/api/GetStateDistrictList/GetStateDistrictList',
+    GET_STATES: '/api/GetState/GetStates',
+    GET_DISTRICTS: '/api/GetDistrict/GetDistricts',
 
     // Categories
     GET_STUDENT_CATEGORIES: '/api/GetStudentCategory/GetStudentCategory',
@@ -74,6 +75,9 @@ export const API_ENDPOINTS = {
 
     // Expense
     GET_EXPENSE_ITEMS: '/api/Expense/GetItemExpenseList',
+
+    // Fee Details
+    GET_FEE_DETAILS: '/api/Fees/GetFeeDetails',
 
     // School
     GET_SCHOOL_DETAILS: '/api/Schools/GetSchoolDetails',
@@ -136,7 +140,8 @@ export const API_METHODS = {
 
 // Common API configurations
 export const API_CONFIG = {
-  BASE_URL: 'https://teo-vivekanadbihar.co.in/TEO-School-API',
+  BASE_URL: 'https://teo-vivekanadbihar.co.in',
+  COLLECTION_BASE_URL: 'https://teo-vivekanadbihar.co.in/TEO-School-API',
   DEFAULT_METHOD: 'POST',
   TIMEOUT: 30000, // 30 seconds
   RETRY_ATTEMPTS: 3,

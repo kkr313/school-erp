@@ -2,20 +2,17 @@
 import { FormControl } from '@mui/material';
 import { Clear, ArrowDropDown } from '@mui/icons-material';
 import FilledAutocomplete from '../../../../utils/FilledAutocomplete';
-import { useApi } from '../../../../utils/useApi';
+import { masterApi } from '../../../../api';
 
 const GetState = ({ value, onChange, error, helperText, sx = {} }) => {
   const [stateOptions, setStateOptions] = useState([]);
   const [loading, setLoading] = useState(false);
-  const { callApi } = useApi();
 
   useEffect(() => {
     const fetchStates = async () => {
       setLoading(true);
       try {
-        const data = await callApi('/Get-State', {
-          trackingID: 'string',
-        });
+        const data = await masterApi.getStates();
 
         if (data && Array.isArray(data)) {
           const options = data.map(item => ({
@@ -42,7 +39,7 @@ const GetState = ({ value, onChange, error, helperText, sx = {} }) => {
     };
 
     fetchStates();
-  }, [callApi]);
+  }, []);
 
   return (
     <FormControl fullWidth>

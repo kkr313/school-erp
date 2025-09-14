@@ -76,7 +76,7 @@ const Login = () => {
   // ✅ Login API call
   const handleLogin = async (uname, pwd, auto = false) => {
     try {
-      const loginUrl = `https://teo-vivekanadbihar.co.in/TEO-School-API/api/Login/Login`;
+      const loginUrl = `https://teo-vivekanadbihar.co.in/api/Login/Login`;
 
       const response = await fetch(loginUrl, {
         method: 'POST',

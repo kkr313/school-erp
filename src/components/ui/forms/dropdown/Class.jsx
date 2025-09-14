@@ -2,20 +2,17 @@ import React, { useEffect, useState } from 'react';
 import { FormControl } from '@mui/material';
 import { Clear, ArrowDropDown } from '@mui/icons-material';
 import FilledAutocomplete from '../../../../utils/FilledAutocomplete';
-import { useApi } from '../../../../utils/useApi';
+import { masterApi } from '../../../../api';
 
 const Class = ({ value, onChange, error, helperText, sx = {} }) => {
   const [classOptions, setClassOptions] = useState([]);
   const [loading, setLoading] = useState(false);
-  const { callApi } = useApi();
 
   useEffect(() => {
     const fetchClasses = async () => {
       setLoading(true);
       try {
-        const data = await callApi('/Get-Class', {
-          trackingID: 'string',
-        });
+        const data = await masterApi.getClasses();
 
         if (data && Array.isArray(data)) {
           const options = data.map(item => ({
@@ -47,7 +44,7 @@ const Class = ({ value, onChange, error, helperText, sx = {} }) => {
     };
 
     fetchClasses();
-  }, [callApi]);
+  }, []);
 
   return (
     <FormControl fullWidth>

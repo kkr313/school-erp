@@ -222,7 +222,7 @@ function App() {
         if (savedUsername && savedPassword && savedSchoolCode) {
           try {
             const response = await fetch(
-              'https://teo-vivekanadbihar.co.in/TEO-School-API/api/Login/Login',
+              'https://teo-vivekanadbihar.co.in/api/Login/Login',
               {
                 method: 'POST',
                 headers: {

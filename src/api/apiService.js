@@ -106,10 +106,15 @@ class ApiService {
       try {
         const requestBody =
           method !== 'GET' ? createRequestBody(data) : undefined;
+        
+        // Handle both full URLs and relative endpoints
+        const isFullUrl = endpoint.startsWith('http://') || endpoint.startsWith('https://');
+        const baseUrl = isFullUrl ? '' : this.baseURL;
+        
         const url =
           method === 'GET' && Object.keys(data).length > 0
-            ? `${this.baseURL}${endpoint}?${new URLSearchParams(data)}`
-            : `${this.baseURL}${endpoint}`;
+            ? `${baseUrl}${endpoint}?${new URLSearchParams(data)}`
+            : `${baseUrl}${endpoint}`;
 
         const response = await fetch(url, {
           method,

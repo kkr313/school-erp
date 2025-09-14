@@ -44,6 +44,20 @@ export const masterApi = {
   },
 
   /**
+   * Get states only
+   */
+  async getStates() {
+    return apiService.call(API_ENDPOINTS.MASTERS.GET_STATES);
+  },
+
+  /**
+   * Get districts only
+   */
+  async getDistricts() {
+    return apiService.call(API_ENDPOINTS.MASTERS.GET_DISTRICTS);
+  },
+
+  /**
    * Get student categories
    */
   async getStudentCategories() {
@@ -97,6 +111,13 @@ export const masterApi = {
    */
   async getMonthlyFees() {
     return apiService.call(API_ENDPOINTS.MASTERS.GET_MONTHLY_FEES);
+  },
+
+  /**
+   * Get fee details
+   */
+  async getFeeDetails() {
+    return apiService.call(API_ENDPOINTS.MASTERS.GET_FEE_DETAILS);
   },
 };
 

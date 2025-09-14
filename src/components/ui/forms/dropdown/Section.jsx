@@ -2,12 +2,11 @@
 import { FormControl } from '@mui/material';
 import { Clear, ArrowDropDown } from '@mui/icons-material';
 import FilledAutocomplete from '../../../../utils/FilledAutocomplete';
-import { useApi } from '../../../../utils/useApi';
+import { masterApi } from '../../../../api';
 
 const Section = ({ value, onChange, error, helperText, classId, sx = {} }) => {
   const [sectionOptions, setSectionOptions] = useState([]);
   const [loading, setLoading] = useState(false);
-  const { callApi } = useApi();
 
   useEffect(() => {
     const fetchSections = async () => {
@@ -18,10 +17,7 @@ const Section = ({ value, onChange, error, helperText, classId, sx = {} }) => {
 
       setLoading(true);
       try {
-        const data = await callApi('/Get-Section', {
-          trackingID: 'string',
-          classID: classId,
-        });
+        const data = await masterApi.getClassSections(classId);
 
         if (data && Array.isArray(data)) {
           const options = data.map(item => ({
@@ -44,7 +40,7 @@ const Section = ({ value, onChange, error, helperText, classId, sx = {} }) => {
     };
 
     fetchSections();
-  }, [callApi, classId]);
+  }, [classId]);
 
   return (
     <FormControl fullWidth>

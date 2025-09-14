@@ -2,7 +2,7 @@
 import { FormControl } from '@mui/material';
 import { Clear, ArrowDropDown } from '@mui/icons-material';
 import FilledAutocomplete from '../../../../utils/FilledAutocomplete';
-import { useApi } from '../../../../utils/useApi';
+import { masterApi } from '../../../../api';
 
 const GetDistrict = ({
   value,
@@ -14,7 +14,6 @@ const GetDistrict = ({
 }) => {
   const [districtOptions, setDistrictOptions] = useState([]);
   const [loading, setLoading] = useState(false);
-  const { callApi } = useApi();
 
   useEffect(() => {
     const fetchDistricts = async () => {
@@ -25,10 +24,7 @@ const GetDistrict = ({
 
       setLoading(true);
       try {
-        const data = await callApi('/Get-District', {
-          trackingID: 'string',
-          stateID: stateId,
-        });
+        const data = await masterApi.getDistricts();
 
         if (data && Array.isArray(data)) {
           const options = data.map(item => ({
@@ -51,7 +47,7 @@ const GetDistrict = ({
     };
 
     fetchDistricts();
-  }, [callApi, stateId]);
+  }, [stateId]);
 
   return (
     <FormControl fullWidth>
