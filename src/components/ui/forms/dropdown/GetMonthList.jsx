@@ -1,0 +1,42 @@
+﻿import React from 'react';
+import { FormControl } from '@mui/material';
+import { Clear, ArrowDropDown } from '@mui/icons-material';
+import FilledAutocomplete from '../../../../utils/FilledAutocomplete';
+
+const GetMonthList = ({ value, onChange, error, helperText, sx = {} }) => {
+  const monthOptions = [
+    { label: 'January', value: '01' },
+    { label: 'February', value: '02' },
+    { label: 'March', value: '03' },
+    { label: 'April', value: '04' },
+    { label: 'May', value: '05' },
+    { label: 'June', value: '06' },
+    { label: 'July', value: '07' },
+    { label: 'August', value: '08' },
+    { label: 'September', value: '09' },
+    { label: 'October', value: '10' },
+    { label: 'November', value: '11' },
+    { label: 'December', value: '12' },
+  ];
+
+  return (
+    <FormControl fullWidth>
+      <FilledAutocomplete
+        options={monthOptions}
+        value={value}
+        onChange={(e, v) => onChange(v)}
+        getOptionLabel={option => option?.label || ''}
+        isOptionEqualToValue={(option, val) => option?.value === val?.value}
+        popupIcon={<ArrowDropDown />}
+        clearIcon={<Clear />}
+        label='Month'
+        name='month'
+        error={error}
+        helperText={helperText}
+        sx={sx}
+      />
+    </FormControl>
+  );
+};
+
+export default GetMonthList;

@@ -35,7 +35,8 @@ export const API_ENDPOINTS = {
   // Fee Management
   FEES: {
     GET_MONTHLY_BILLING_FEES: '/api/MonthlyBillingFees/GetMonthlyBillingFees',
-    GET_BILLING_RECEIPT_NUMBER: '/api/MonthlyBillingFees/GetBillingReceiptNumber',
+    GET_BILLING_RECEIPT_NUMBER:
+      '/api/MonthlyBillingFees/GetBillingReceiptNumber',
     PROCESS_FEE_PAYMENT: '/api/Fees/ProcessPayment',
     GET_FEE_STRUCTURE: '/api/Fees/GetFeeStructure',
   },
@@ -51,21 +52,43 @@ export const API_ENDPOINTS = {
   MASTERS: {
     // Gender
     GET_GENDERS: '/api/GetGenders/GetGenders',
-    
+
     // Religion
     GET_RELIGIONS: '/api/GetReligions/GetReligions',
-    
+
     // Location
     GET_STATE_DISTRICT_LIST: '/api/GetStateDistrictList/GetStateDistrictList',
-    
+
     // Categories
     GET_STUDENT_CATEGORIES: '/api/GetStudentCategory/GetStudentCategory',
-    
+
     // Employee
+    GET_EMPLOYEES: '/api/Employee/GetEmployees',
     GET_EMPLOYEE_DEPARTMENTS: '/api/EmployeeDepartment/GetEmployeeDepartments',
-    
+
+    // Session
+    GET_SESSION_DETAILS: '/api/Session/GetSessionStartEndDetails',
+
     // Time
     GET_MONTHS: '/api/GetMonths/GetMonths',
+
+    // Expense
+    GET_EXPENSE_ITEMS: '/api/Expense/GetItemExpenseList',
+
+    // School
+    GET_SCHOOL_DETAILS: '/api/Schools/GetSchoolDetails',
+
+    // Monthly Fees
+    GET_MONTHLY_FEES: '/api/Fees/GetMonthlyFees',
+  },
+
+  // Expense Management
+  EXPENSES: {
+    GET_FILTER_EXPENSES: '/api/GetExpenses/GetFilterExpenses',
+    GET_ITEM_EXPENSE_LIST: '/api/Expense/GetItemExpenseList',
+    ADD_EXPENSE: '/api/Expense/AddExpense',
+    UPDATE_EXPENSE: '/api/Expense/UpdateExpense',
+    DELETE_EXPENSE: '/api/Expense/DeleteExpense',
   },
 
   // Reports

@@ -17,7 +17,9 @@ export const masterApi = {
    * Get sections for a specific class
    */
   async getClassSections(classId) {
-    return apiService.call(API_ENDPOINTS.CLASSES.GET_CLASS_SECTIONS, { classId });
+    return apiService.call(API_ENDPOINTS.CLASSES.GET_CLASS_SECTIONS, {
+      classId,
+    });
   },
 
   /**
@@ -60,6 +62,41 @@ export const masterApi = {
    */
   async getMonths() {
     return apiService.call(API_ENDPOINTS.MASTERS.GET_MONTHS);
+  },
+
+  /**
+   * Get all employees
+   */
+  async getEmployees() {
+    return apiService.call(API_ENDPOINTS.MASTERS.GET_EMPLOYEES);
+  },
+
+  /**
+   * Get session start/end details
+   */
+  async getSessionDetails() {
+    return apiService.call(API_ENDPOINTS.MASTERS.GET_SESSION_DETAILS);
+  },
+
+  /**
+   * Get expense items
+   */
+  async getExpenseItems() {
+    return apiService.call(API_ENDPOINTS.MASTERS.GET_EXPENSE_ITEMS);
+  },
+
+  /**
+   * Get school details
+   */
+  async getSchoolDetails() {
+    return apiService.call(API_ENDPOINTS.MASTERS.GET_SCHOOL_DETAILS);
+  },
+
+  /**
+   * Get monthly fees
+   */
+  async getMonthlyFees() {
+    return apiService.call(API_ENDPOINTS.MASTERS.GET_MONTHLY_FEES);
   },
 };
 

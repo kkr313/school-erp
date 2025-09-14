@@ -10,9 +10,10 @@
 export function filterMenuItems(searchText, menuItems) {
   if (!searchText.trim()) return [];
   const lower = searchText.toLowerCase();
-  return menuItems.filter(item =>
-    item.title.toLowerCase().includes(lower) ||
-    (item.path && item.path.toLowerCase().includes(lower))
+  return menuItems.filter(
+    item =>
+      item.title.toLowerCase().includes(lower) ||
+      (item.path && item.path.toLowerCase().includes(lower)),
   );
 }
 
@@ -28,8 +29,10 @@ export function filterDataItems(searchText, data, keys) {
   const lower = searchText.toLowerCase();
   return data.filter(item =>
     keys.some(key =>
-      String(item[key] || "").toLowerCase().includes(lower)
-    )
+      String(item[key] || '')
+        .toLowerCase()
+        .includes(lower),
+    ),
   );
 }
 

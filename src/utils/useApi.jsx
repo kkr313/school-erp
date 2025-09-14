@@ -31,55 +31,73 @@ export const useApi = () => {
   /**
    * Backward compatible callApi function
    */
-  const callApi = useCallback(async (endpoint, body = {}) => {
-    // Abort any ongoing request
-    cleanup();
-    
-    // Create new abort controller
-    abortControllerRef.current = new AbortController();
-    
-    setLoading(true);
-    setError(null);
+  const callApi = useCallback(
+    async (endpoint, body = {}) => {
+      // Abort any ongoing request
+      cleanup();
 
-    try {
-      const result = await apiService.call(endpoint, body, {
-        signal: abortControllerRef.current.signal,
-      });
-      
-      setData(result);
-      return result;
-    } catch (err) {
-      // Don't set error if request was aborted (component unmounted or new request started)
-      if (err.name !== 'AbortError') {
-        const errorMessage = err instanceof ApiError ? err.message : err.message || "API request failed";
-        setError(errorMessage);
-        console.error('API Error:', err);
+      // Create new abort controller
+      abortControllerRef.current = new AbortController();
+
+      setLoading(true);
+      setError(null);
+
+      try {
+        const result = await apiService.call(endpoint, body, {
+          signal: abortControllerRef.current.signal,
+        });
+
+        setData(result);
+        return result;
+      } catch (err) {
+        // Don't set error if request was aborted (component unmounted or new request started)
+        if (err.name !== 'AbortError') {
+          const errorMessage =
+            err instanceof ApiError
+              ? err.message
+              : err.message || 'API request failed';
+          setError(errorMessage);
+          console.error('API Error:', err);
+        }
+        return null;
+      } finally {
+        setLoading(false);
+        abortControllerRef.current = null;
       }
-      return null;
-    } finally {
-      setLoading(false);
-      abortControllerRef.current = null;
-    }
-  }, [cleanup]);
+    },
+    [cleanup],
+  );
 
   /**
    * Enhanced API methods
    */
-  const get = useCallback((endpoint, params = {}, options = {}) => {
-    return callApi(endpoint, params, { ...options, method: 'GET' });
-  }, [callApi]);
+  const get = useCallback(
+    (endpoint, params = {}, options = {}) => {
+      return callApi(endpoint, params, { ...options, method: 'GET' });
+    },
+    [callApi],
+  );
 
-  const post = useCallback((endpoint, data = {}, options = {}) => {
-    return callApi(endpoint, data, { ...options, method: 'POST' });
-  }, [callApi]);
+  const post = useCallback(
+    (endpoint, data = {}, options = {}) => {
+      return callApi(endpoint, data, { ...options, method: 'POST' });
+    },
+    [callApi],
+  );
 
-  const put = useCallback((endpoint, data = {}, options = {}) => {
-    return callApi(endpoint, data, { ...options, method: 'PUT' });
-  }, [callApi]);
+  const put = useCallback(
+    (endpoint, data = {}, options = {}) => {
+      return callApi(endpoint, data, { ...options, method: 'PUT' });
+    },
+    [callApi],
+  );
 
-  const remove = useCallback((endpoint, data = {}, options = {}) => {
-    return callApi(endpoint, data, { ...options, method: 'DELETE' });
-  }, [callApi]);
+  const remove = useCallback(
+    (endpoint, data = {}, options = {}) => {
+      return callApi(endpoint, data, { ...options, method: 'DELETE' });
+    },
+    [callApi],
+  );
 
   /**
    * Clear error state
@@ -103,19 +121,19 @@ export const useApi = () => {
     callApi,
     loading,
     error,
-    
+
     // Enhanced features
     data,
     get,
     post,
     put,
     delete: remove,
-    
+
     // Utilities
     clearError,
     reset,
     cleanup,
-    
+
     // Error helpers
     isClientError: error?.isClientError?.() || false,
     isServerError: error?.isServerError?.() || false,
@@ -135,14 +153,15 @@ export const useApiOperation = (apiFunction, dependencies = []) => {
   const execute = useCallback(async (...args) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const result = await apiFunction(...args);
       setData(result);
       setHasRun(true);
       return result;
     } catch (err) {
-      const apiError = err instanceof ApiError ? err : new ApiError(err.message);
+      const apiError =
+        err instanceof ApiError ? err : new ApiError(err.message);
       setError(apiError);
       console.error('API Operation Error:', apiError);
       return null;
@@ -179,7 +198,10 @@ export const useApiFetch = (apiFunction, dependencies = [], options = {}) => {
   const operation = useApiOperation(apiFunction, dependencies);
 
   useEffect(() => {
-    if (immediate && dependencies.every(dep => dep !== null && dep !== undefined)) {
+    if (
+      immediate &&
+      dependencies.every(dep => dep !== null && dep !== undefined)
+    ) {
       operation.execute(...dependencies);
     }
   }, [operation.execute, immediate, ...dependencies]);

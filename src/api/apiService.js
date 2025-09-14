@@ -8,7 +8,7 @@ class ApiService {
   constructor() {
     this.baseURL = API_CONFIG.BASE_URL;
     this.defaultHeaders = {
-      'accept': 'text/plain',
+      accept: 'text/plain',
       'Content-Type': 'application/json',
     };
   }
@@ -19,7 +19,7 @@ class ApiService {
   getAuthHeaders() {
     const schoolCode = sessionStorage.getItem('schoolCode');
     const authToken = sessionStorage.getItem('token');
-    
+
     return {
       'BS-SchoolCode': schoolCode,
       'BS-UserToken': 'e6b2d3f0-2e3c-4f3a-9c1d-bb1b5e5ab7fa', // Static token
@@ -47,7 +47,7 @@ class ApiService {
       throw new ApiError(
         `API request failed: ${response.status} ${response.statusText}`,
         response.status,
-        errorData
+        errorData,
       );
     }
 
@@ -55,7 +55,7 @@ class ApiService {
     if (contentType && contentType.includes('application/json')) {
       return await response.json();
     }
-    
+
     return await response.text();
   }
 
@@ -64,27 +64,27 @@ class ApiService {
    */
   async withRetry(fn, attempts = API_CONFIG.RETRY_ATTEMPTS) {
     let lastError;
-    
+
     for (let i = 0; i < attempts; i++) {
       try {
         return await fn();
       } catch (error) {
         lastError = error;
-        
+
         // Don't retry on client errors (4xx)
         if (error.status >= 400 && error.status < 500) {
           throw error;
         }
-        
+
         // Wait before retrying
         if (i < attempts - 1) {
-          await new Promise(resolve => 
-            setTimeout(resolve, API_CONFIG.RETRY_DELAY * (i + 1))
+          await new Promise(resolve =>
+            setTimeout(resolve, API_CONFIG.RETRY_DELAY * (i + 1)),
           );
         }
       }
     }
-    
+
     throw lastError;
   }
 
@@ -104,10 +104,12 @@ class ApiService {
       const timeoutId = setTimeout(() => controller.abort(), timeout);
 
       try {
-        const requestBody = method !== 'GET' ? createRequestBody(data) : undefined;
-        const url = method === 'GET' && Object.keys(data).length > 0
-          ? `${this.baseURL}${endpoint}?${new URLSearchParams(data)}`
-          : `${this.baseURL}${endpoint}`;
+        const requestBody =
+          method !== 'GET' ? createRequestBody(data) : undefined;
+        const url =
+          method === 'GET' && Object.keys(data).length > 0
+            ? `${this.baseURL}${endpoint}?${new URLSearchParams(data)}`
+            : `${this.baseURL}${endpoint}`;
 
         const response = await fetch(url, {
           method,
@@ -120,11 +122,11 @@ class ApiService {
         return await this.handleResponse(response);
       } catch (error) {
         clearTimeout(timeoutId);
-        
+
         if (error.name === 'AbortError') {
           throw new ApiError('Request timeout', 408, 'Request timed out');
         }
-        
+
         throw error;
       }
     };
@@ -132,7 +134,7 @@ class ApiService {
     if (retry) {
       return await this.withRetry(makeRequest);
     }
-    
+
     return await makeRequest();
   }
 

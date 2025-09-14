@@ -1,5 +1,5 @@
 // hooks/usePrint.js
-import { useState, useRef } from "react";
+import { useState, useRef } from 'react';
 
 export const usePrint = (printDelay = 300) => {
   const [printMode, setPrintMode] = useState(false);

@@ -1,12 +1,13 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
-*{
-    box-sizing: border-box;
+* {
+  box-sizing: border-box;
 }
 
-html, body{
-    width: 100%;
-    height: 100%;
+html,
+body {
+  width: 100%;
+  height: 100%;
 }
 
 /* Body padding to avoid navbar overlap */
@@ -48,7 +49,11 @@ body {
 
 /* Enhanced glassmorphism effects for sidebar */
 .glass-active {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.2));
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.4),
+    rgba(255, 255, 255, 0.2)
+  );
   backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.3);
   box-shadow: 0 8px 32px rgba(31, 38, 135, 0.3);
@@ -59,7 +64,11 @@ body {
 }
 
 .glass-hover:hover {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.15));
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.3),
+    rgba(255, 255, 255, 0.15)
+  );
   backdrop-filter: blur(15px);
   border: 1px solid rgba(255, 255, 255, 0.25);
   transform: translateY(-1px);
@@ -78,7 +87,12 @@ body {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
   transition: left 0.5s;
 }
 
@@ -104,9 +118,15 @@ body {
 
 /* Gradient border animation */
 @keyframes gradientBorder {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 .gradient-border {
@@ -117,22 +137,28 @@ body {
 
 /* Floating animation for logo */
 @keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-5px); }
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
 }
 
 /* Premium floating animation */
 @keyframes float {
-  0%, 100% { 
+  0%,
+  100% {
     transform: translateY(0px) rotate(0deg);
   }
-  25% { 
+  25% {
     transform: translateY(-3px) rotate(1deg);
   }
-  50% { 
+  50% {
     transform: translateY(-2px) rotate(-1deg);
   }
-  75% { 
+  75% {
     transform: translateY(-4px) rotate(0.5deg);
   }
 }
@@ -147,11 +173,16 @@ body {
 
 /* Enhanced glow effect */
 @keyframes enhancedGlow {
-  0%, 100% { 
-    box-shadow: 0 0 20px rgba(59,130,246,0.4), 0 0 40px rgba(139,92,246,0.2); 
+  0%,
+  100% {
+    box-shadow:
+      0 0 20px rgba(59, 130, 246, 0.4),
+      0 0 40px rgba(139, 92, 246, 0.2);
   }
-  50% { 
-    box-shadow: 0 0 30px rgba(59,130,246,0.6), 0 0 60px rgba(139,92,246,0.4); 
+  50% {
+    box-shadow:
+      0 0 30px rgba(59, 130, 246, 0.6),
+      0 0 60px rgba(139, 92, 246, 0.4);
   }
 }
 
@@ -161,23 +192,33 @@ body {
 
 /* Shimmer effect */
 @keyframes shimmer {
-  0% { background-position: -1000px 0; }
-  100% { background-position: 1000px 0; }
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
 }
 
 .shimmer {
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
   background-size: 1000px 100%;
   animation: shimmer 2s infinite;
 }
 
 /* Notification pulse animation */
 @keyframes notificationPulse {
-  0%, 100% { 
+  0%,
+  100% {
     transform: scale(1);
     opacity: 1;
   }
-  50% { 
+  50% {
     transform: scale(1.1);
     opacity: 0.8;
   }
@@ -189,8 +230,13 @@ body {
 
 /* Status indicator animations */
 @keyframes statusPulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 .status-online {
@@ -199,19 +245,23 @@ body {
 
 /* Smooth backdrop transitions */
 .backdrop-transition {
-  transition: backdrop-filter 0.3s ease, background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    backdrop-filter 0.3s ease,
+    background-color 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 /* Enhanced shadow layers */
 .shadow-layered {
-  box-shadow: 
+  box-shadow:
     0 1px 3px rgba(0, 0, 0, 0.12),
     0 1px 2px rgba(0, 0, 0, 0.24),
     0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
 .shadow-layered-hover:hover {
-  box-shadow: 
+  box-shadow:
     0 3px 6px rgba(0, 0, 0, 0.16),
     0 3px 6px rgba(0, 0, 0, 0.23),
     0 8px 30px rgba(0, 0, 0, 0.15);
@@ -246,8 +296,12 @@ body {
 }
 
 @keyframes marquee {
-  0%   { transform: translateX(100%); }
-  100% { transform: translateX(-100%); }
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
 }
 
 .animate-marquee {
@@ -256,8 +310,13 @@ body {
 }
 
 @keyframes glow {
-  0%, 100% { box-shadow: 0 0 10px rgba(59,130,246,0.6); }
-  50% { box-shadow: 0 0 20px rgba(59,130,246,1); }
+  0%,
+  100% {
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 1);
+  }
 }
 .glow {
   animation: glow 1.5s infinite ease-in-out;
@@ -309,14 +368,22 @@ body {
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.7), rgba(147, 51, 234, 0.7));
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.7),
+    rgba(147, 51, 234, 0.7)
+  );
   border-radius: 10px;
   transition: all 0.3s ease;
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.9), rgba(147, 51, 234, 0.9));
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.9),
+    rgba(147, 51, 234, 0.9)
+  );
   transform: scaleX(1.2);
   box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
 }
@@ -353,8 +420,13 @@ body {
 
 /* Premium gradient animations */
 @keyframes gradientShift {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
 }
 
 .animate-gradient {

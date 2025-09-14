@@ -1,6 +1,6 @@
 // src/hooks/usePrompt.js
-import { useCallback, useContext, useEffect } from "react";
-import { UNSAFE_NavigationContext as NavigationContext } from "react-router-dom";
+import { useCallback, useContext, useEffect } from 'react';
+import { UNSAFE_NavigationContext as NavigationContext } from 'react-router-dom';
 
 export function usePrompt(message, when) {
   const { navigator } = useContext(NavigationContext);
@@ -8,7 +8,7 @@ export function usePrompt(message, when) {
   useEffect(() => {
     if (!when) return;
 
-    const unblock = navigator.block((tx) => {
+    const unblock = navigator.block(tx => {
       const confirmed = window.confirm(message);
       if (confirmed) {
         unblock();

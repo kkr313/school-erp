@@ -2,7 +2,7 @@
 import React, { createContext, useContext, useState } from 'react';
 
 // Helper: check if color is light or dark
-const isColorDark = (hex) => {
+const isColorDark = hex => {
   const c = hex.substring(1); // strip #
   const rgb = parseInt(c, 16); // convert rrggbb to decimal
   const r = (rgb >> 16) & 0xff;
@@ -41,8 +41,12 @@ export const ThemeProvider = ({ children }) => {
     form: isColorDark(theme.formBg) ? '#ffffff' : '#000000',
     paper: isColorDark(theme.paperBg) ? '#ffffff' : '#000000',
     formHeader: isColorDark(theme.formHeaderFontColor) ? '#ffffff' : '#000000',
-    printHeader: isColorDark(theme.printHeaderFontColor) ? '#ffffff' : '#000000',
-    printSubHeader: isColorDark(theme.printSubHeaderFontColor) ? '#ffffff' : '#000000',
+    printHeader: isColorDark(theme.printHeaderFontColor)
+      ? '#ffffff'
+      : '#000000',
+    printSubHeader: isColorDark(theme.printSubHeaderFontColor)
+      ? '#ffffff'
+      : '#000000',
   };
 
   return (
