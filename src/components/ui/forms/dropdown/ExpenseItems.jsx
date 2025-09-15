@@ -1,23 +1,27 @@
 ﻿import React, { useEffect, useState } from 'react';
 import { FormControl } from '@mui/material';
 import { Clear, ArrowDropDown } from '@mui/icons-material';
+import { useTheme } from '../../../../context/ThemeContext';
+import { useApi } from '../../../../utils/useApi.jsx';
+import { API_ENDPOINTS } from '../../../../api/endpoints';
 import FilledAutocomplete from '../../../../utils/FilledAutocomplete';
-import { masterApi } from '../../../../api';
 
 const ExpenseItems = ({ value, onChange, error, helperText, sx = {} }) => {
   const [expenseOptions, setExpenseOptions] = useState([]);
   const [loading, setLoading] = useState(false);
+  const { fontColor } = useTheme();
+  const { callApi } = useApi();
 
   useEffect(() => {
     const fetchExpenseItems = async () => {
       setLoading(true);
-      try {
-        const data = await masterApi.getExpenseItems();
+      try {        // Use school-web-app compatible API call
+        const data = await callApi(API_ENDPOINTS.EXPENSES.GET_ITEM_EXPENSE_LIST, {});
 
         if (data && Array.isArray(data)) {
           const options = data.map(item => ({
             label: item.itemName || item.name || item.label,
-            value: item.itemID || item.id || item.value,
+            value: item.itemID || item.itemId || item.id || item.value,
           }));
           setExpenseOptions(options);
         }

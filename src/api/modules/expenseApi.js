@@ -28,6 +28,13 @@ export const expenseApi = {
   },
 
   /**
+   * Add a new expense (alternative endpoint)
+   */
+  async addExpenses(expenseData) {
+    return apiService.call(API_ENDPOINTS.EXPENSES.ADD_EXPENSES, expenseData);
+  },
+
+  /**
    * Update an existing expense
    */
   async updateExpense(expenseData) {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box } from '@mui/material';
-import { FaRupeeSign, FaWallet } from 'react-icons/fa';
+import { FaRupeeSign, FaWallet, FaPrint, FaTimes } from 'react-icons/fa';
 import CustomBreadcrumb from '../ui/navigation/CustomBreadcrumb';
 import ModernDashboardCard from '../ui/cards/ModernDashboardCard';
 
@@ -18,6 +18,20 @@ const collectionFeatures = [
     color: '#dc2626',
     path: '/dues-collection',
     description: 'Outstanding payments',
+  },
+  {
+    label: 'Cancel Fee Collection',
+    icon: <FaTimes />,
+    color: '#f59e0b',
+    path: '/cancel-fee-collection',
+    description: 'Cancel fee collections',
+  },
+  {
+    label: 'Print Fee Config',
+    icon: <FaPrint />,
+    color: '#3b82f6',
+    path: '/configuration/print-fee',
+    description: 'Configure print settings',
   },
 ];
 

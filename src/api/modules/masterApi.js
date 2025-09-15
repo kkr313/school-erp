@@ -28,12 +28,18 @@ export const masterApi = {
   async getGenders() {
     return apiService.call(API_ENDPOINTS.MASTERS.GET_GENDERS);
   },
-
   /**
    * Get all religions
    */
   async getReligions() {
     return apiService.call(API_ENDPOINTS.MASTERS.GET_RELIGIONS);
+  },
+
+  /**
+   * Get all religions (alternative endpoint)
+   */
+  async getReligionsAlt() {
+    return apiService.call(API_ENDPOINTS.MASTERS.GET_RELIGIONS_ALT);
   },
 
   /**
@@ -62,6 +68,13 @@ export const masterApi = {
    */
   async getStudentCategories() {
     return apiService.call(API_ENDPOINTS.MASTERS.GET_STUDENT_CATEGORIES);
+  },
+
+  /**
+   * Get student categories (alternative endpoint)
+   */
+  async getStudentCategoriesAlt() {
+    return apiService.call(API_ENDPOINTS.MASTERS.GET_STUDENT_CATEGORIES_ALT);
   },
 
   /**

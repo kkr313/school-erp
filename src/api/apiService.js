@@ -3,10 +3,10 @@
  * Enhanced API service with centralized configuration and improved error handling
  */
 import { API_CONFIG, createRequestBody, HTTP_STATUS } from './endpoints.js';
+import { getBaseUrlBySchoolCode } from '../utils/schoolBaseUrls.jsx';
 
 class ApiService {
   constructor() {
-    this.baseURL = API_CONFIG.BASE_URL;
     this.defaultHeaders = {
       accept: 'text/plain',
       'Content-Type': 'application/json',
@@ -14,16 +14,37 @@ class ApiService {
   }
 
   /**
-   * Get authentication headers from session storage
+   * Get dynamic base URL based on school code
+   */
+  getDynamicBaseUrl() {
+    const schoolCode = sessionStorage.getItem('schoolCode');
+    if (schoolCode) {
+      const dynamicBaseUrl = getBaseUrlBySchoolCode(schoolCode);
+      if (dynamicBaseUrl) {
+        return dynamicBaseUrl;
+      }
+    }
+    
+    // Fallback to environment variable or default
+    return API_CONFIG.DEFAULT_BASE_URL;
+  }
+
+  /**
+   * Get authentication headers from session storage - Dynamic
    */
   getAuthHeaders() {
     const schoolCode = sessionStorage.getItem('schoolCode');
     const authToken = sessionStorage.getItem('token');
+    const userToken = sessionStorage.getItem('userToken') || API_CONFIG.DEFAULT_USER_TOKEN;
+
+    if (!schoolCode) {
+      console.warn('School code is missing from session storage');
+    }
 
     return {
-      'BS-SchoolCode': schoolCode,
-      'BS-UserToken': 'e6b2d3f0-2e3c-4f3a-9c1d-bb1b5e5ab7fa', // Static token
-      'BS-AuthorizationToken': authToken,
+      'BS-SchoolCode': schoolCode || '',
+      'BS-UserToken': userToken,
+      'BS-AuthorizationToken': authToken || '',
     };
   }
 
@@ -103,20 +124,42 @@ class ApiService {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), timeout);
 
-      try {
-        const requestBody =
+      try {        const requestBody =
           method !== 'GET' ? createRequestBody(data) : undefined;
         
-        // Handle both full URLs and relative endpoints
-        const isFullUrl = endpoint.startsWith('http://') || endpoint.startsWith('https://');
-        const baseUrl = isFullUrl ? '' : this.baseURL;
+        // Handle both full URLs and relative endpoints - Fully Dynamic
+        let baseUrl;
+        let finalUrl;
+        
+        if (endpoint.startsWith('http://') || endpoint.startsWith('https://')) {
+          // Absolute URL - use as is
+          finalUrl = endpoint;
+        } else {
+          // Relative URL - build dynamically
+          baseUrl = this.getDynamicBaseUrl();
+          
+          if (!baseUrl) {
+            throw new ApiError('Unable to determine base URL for API call', 500, 'Configuration Error');
+          }
+          
+          finalUrl = `${baseUrl}${endpoint}`;
+        }
         
         const url =
           method === 'GET' && Object.keys(data).length > 0
-            ? `${baseUrl}${endpoint}?${new URLSearchParams(data)}`
-            : `${baseUrl}${endpoint}`;
+            ? `${finalUrl}?${new URLSearchParams(data)}`
+            : finalUrl;
 
-        const response = await fetch(url, {
+        if (API_CONFIG.DEBUG_MODE) {
+          console.log('🔹 API Call:', {
+            endpoint,
+            baseUrl,
+            finalUrl: url,
+            method,
+            data: requestBody,
+            headers: this.createHeaders(customHeaders)
+          });
+        }        const response = await fetch(url, {
           method,
           headers: this.createHeaders(customHeaders),
           body: requestBody ? JSON.stringify(requestBody) : undefined,
@@ -124,6 +167,15 @@ class ApiService {
         });
 
         clearTimeout(timeoutId);
+        
+        if (API_CONFIG.DEBUG_MODE) {
+          console.log('🔹 API Response:', {
+            status: response.status,
+            statusText: response.statusText,
+            url: response.url
+          });
+        }
+        
         return await this.handleResponse(response);
       } catch (error) {
         clearTimeout(timeoutId);

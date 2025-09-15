@@ -69,6 +69,11 @@ export const collectionItems = [
     icon: FiIcons.FiDollarSign,
     path: '/dues-collection',
   },
+  { 
+    title: 'Cancel Fee Collection', 
+    icon: FaIcons.FaTimes, 
+    path: '/cancel-fee-collection' 
+  },
   { title: 'Demand Bill', icon: FiIcons.FiFileText, path: '/demand-bill' },
 ];
 
@@ -98,5 +103,10 @@ export const configItems = [
     title: 'Header Config',
     icon: FiIcons.FiFileText,
     path: '/configuration/header',
+  },
+  {
+    title: 'Print Fee Config',
+    icon: FaIcons.FaPrint,
+    path: '/configuration/print-fee',
   },
 ];

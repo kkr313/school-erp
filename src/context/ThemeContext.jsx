@@ -21,13 +21,13 @@ export const defaultTheme = {
   fontFamily: 'Arial',
   formHeaderFontColor: 'blue',
   formHeaderFontFamily: 'Arial',
-
   // Print header configuration
   printHeaderFontColor: '#000000',
   printHeaderFontFamily: 'Poppins',
   printSubHeaderFontColor: '#444444',
   printSubHeaderFontFamily: 'Poppins',
   printHeaderStyle: 'Style1', // could be: Style1, Style2, Classic, etc.
+  printCopyType: 'Single Copy', // Fee receipt print copy type
 };
 
 const ThemeContext = createContext();

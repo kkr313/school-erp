@@ -2,48 +2,53 @@
 /**
  * Centralized API endpoints configuration - Fully Dynamic
  * All API endpoints are organized by feature modules with NO hard-coded URLs
- * Base URLs are determined dynamically based on school codes
  */
 
-export const API_ENDPOINTS = {  // Authentication & User Management
+export const API_ENDPOINTS = {
+  // Authentication & User Management
   AUTH: {
-    LOGIN: '/api/Login/Login',
+    LOGIN: '/TEO-School-API/api/Login/Login',
     LOGOUT: '/api/auth/logout',
     REFRESH_TOKEN: '/api/auth/refresh',
   },
 
   // Student Management
   STUDENTS: {
-    GET_FILTER_STUDENTS: '/api/GetStudents/GetFilterStudents',
-    GET_MONTHLY_FEES_STUDENTS: '/api/GetStudents/GetFilterMonthlyFeesStudents',
-    GET_DUES_FEES_STUDENTS: '/api/GetStudents/GetFilterDuesFeesStudents',
-    GET_STUDENT_DETAILS: '/api/GetStudents/GetStudentDetails',
+    GET_FILTER_STUDENTS: '/TEO-School-API/api/GetStudents/GetFilterStudents',
+    GET_MONTHLY_FEES_STUDENTS: '/TEO-School-API/api/GetStudents/GetFilterMonthlyFeesStudents',
+    GET_DUES_FEES_STUDENTS: '/TEO-School-API/api/GetStudents/GetFilterDuesFeesStudents',
+    GET_STUDENT_DETAILS: '/TEO-School-API/api/GetStudents/GetStudentDetails',
     GET_ALL_STUDENT_LIST: '/api/Students/GetAllStudentList',
     ADD_STUDENT: '/api/Students/AddStudent',
     UPDATE_STUDENT: '/api/Students/UpdateStudent',
     DELETE_STUDENT: '/api/Students/DeleteStudent',
-  },  // Class & Section Management
+  },
+
+  // Class & Section Management
   CLASSES: {
     GET_CLASSES: '/api/GetClass/GetClasses',
     GET_CLASS_SECTIONS: '/api/GetClass/GetClassSection',
     ADD_CLASS: '/api/Class/AddClass',
     UPDATE_CLASS: '/api/Class/UpdateClass',
     DELETE_CLASS: '/api/Class/DeleteClass',
-  },  // Fee Management
+  },
+
+  // Fee Management
   FEES: {
-    GET_MONTHLY_BILLING_FEES: '/api/MonthlyBillingFees/GetMonthlyBillingFees',
-    GET_BILLING_RECEIPT_NUMBER: '/api/MonthlyBillingFees/GetBillingReceiptNumber',
-    PROCESS_FEE_PAYMENT: '/api/Fees/ProcessPayment',
+    GET_MONTHLY_BILLING_FEES: '/TEO-School-API/api/MonthlyBillingFees/GetMonthlyBillingFees',
+    GET_BILLING_RECEIPT_NUMBER: '/TEO-School-API/api/MonthlyBillingFees/GetBillingReceiptNumber',
+    PROCESS_FEE_PAYMENT: '/TEO-School-API/api/Fees/ProcessPayment',
     GET_FEE_STRUCTURE: '/api/Fees/GetFeeStructure',
-    CANCEL_FEE_COLLECTION: '/api/Fees/CancelFeeCollection',
   },
 
   // Dues Management
   DUES: {
-    GET_BILLING_RECEIPT_NUMBER: '/api/DuesBillingFees/GetBillingReceiptNumber',
-    GET_STUDENT_DEMANDS: '/api/GetStudentDemands/GetStudentDemandsByIds',
-    PROCESS_DUES_PAYMENT: '/api/Dues/ProcessPayment',
-  },  // Master Data
+    GET_BILLING_RECEIPT_NUMBER: '/TEO-School-API/api/DuesBillingFees/GetBillingReceiptNumber',
+    GET_STUDENT_DEMANDS: '/TEO-School-API/api/GetStudentDemands/GetStudentDemandsByIds',
+    PROCESS_DUES_PAYMENT: '/TEO-School-API/api/Dues/ProcessPayment',
+  },
+
+  // Master Data
   MASTERS: {
     // Gender
     GET_GENDERS: '/api/GetGenders/GetGenders',
@@ -59,7 +64,9 @@ export const API_ENDPOINTS = {  // Authentication & User Management
 
     // Categories
     GET_STUDENT_CATEGORIES: '/api/GetStudentCategory/GetStudentCategory',
-    GET_STUDENT_CATEGORIES_ALT: '/api/StudentCategory/GetStudentCategory',    // Employee
+    GET_STUDENT_CATEGORIES_ALT: '/api/StudentCategory/GetStudentCategory',
+
+    // Employee
     GET_EMPLOYEES: '/api/Employee/GetEmployees',
     GET_EMPLOYEE_DEPARTMENTS: '/api/EmployeeDepartment/GetEmployeeDepartments',
 
@@ -136,32 +143,34 @@ export const API_METHODS = {
 };
 
 // Common API configurations - Fully Dynamic
-export const API_CONFIG = {  // Default base URL (fallback only)
-  DEFAULT_BASE_URL: import.meta.env.VITE_DEFAULT_BASE_URL || 'https://teo-vivekanadbihar.co.in',
+export const API_CONFIG = {
+  // Default base URL (fallback only)
+  DEFAULT_BASE_URL: process.env.REACT_APP_DEFAULT_BASE_URL || 'https://teo-vivekanadbihar.co.in',
   
   // Collection API suffix (appended to school-specific base URL)
   COLLECTION_API_SUFFIX: '/TEO-School-API',
   
   // Default request method
   DEFAULT_METHOD: 'POST',
-    // Request timeout
-  TIMEOUT: parseInt(import.meta.env.VITE_API_TIMEOUT) || 30000, // 30 seconds
+  
+  // Request timeout
+  TIMEOUT: parseInt(process.env.REACT_APP_API_TIMEOUT) || 30000, // 30 seconds
   
   // Retry configuration
-  RETRY_ATTEMPTS: parseInt(import.meta.env.VITE_RETRY_ATTEMPTS) || 3,
-  RETRY_DELAY: parseInt(import.meta.env.VITE_RETRY_DELAY) || 1000, // 1 second
+  RETRY_ATTEMPTS: parseInt(process.env.REACT_APP_RETRY_ATTEMPTS) || 3,
+  RETRY_DELAY: parseInt(process.env.REACT_APP_RETRY_DELAY) || 1000, // 1 second
   
   // Default user token (configurable via environment)
-  DEFAULT_USER_TOKEN: import.meta.env.VITE_DEFAULT_USER_TOKEN || 'e6b2d3f0-2e3c-4f3a-9c1d-bb1b5e5ab7fa',
+  DEFAULT_USER_TOKEN: process.env.REACT_APP_DEFAULT_USER_TOKEN || 'e6b2d3f0-2e3c-4f3a-9c1d-bb1b5e5ab7fa',
   
   // Environment-specific settings
-  ENVIRONMENT: import.meta.env.MODE || 'development',
+  ENVIRONMENT: process.env.NODE_ENV || 'development',
   
   // Debug mode for API calls
-  DEBUG_MODE: import.meta.env.VITE_API_DEBUG === 'true',
+  DEBUG_MODE: process.env.REACT_APP_API_DEBUG === 'true',
   
   // Tracking ID configuration
-  DEFAULT_TRACKING_ID: import.meta.env.VITE_TRACKING_ID || 'WEB_APP',
+  DEFAULT_TRACKING_ID: process.env.REACT_APP_TRACKING_ID || 'WEB_APP',
 };
 
 // Standard request body structure - Dynamic tracking ID

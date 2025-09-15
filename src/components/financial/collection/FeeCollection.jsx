@@ -30,12 +30,18 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
 import { Search, Person, Receipt, Payment, Close } from '@mui/icons-material';
 import { api } from '../../../api/index.js';
 import GetFeeDetails from '../../ui/forms/dropdown/GetFeeDetails';
 import { useTheme } from '../../../context/ThemeContext';
 import CustomBreadcrumb from '../../ui/navigation/CustomBreadcrumb';
+import FeeReceiptPrintView from './FeeReceiptPrintView';
+import FeeReceiptTwoCopyPrintView from './FeeReceiptTwoCopyPrintView';
 
 const FeeCollection = () => {
   const [searchText, setSearchText] = useState('');
@@ -52,6 +58,8 @@ const FeeCollection = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(false);
+  const [printData, setPrintData] = useState(null);
+  const [printDialog, setPrintDialog] = useState(false);
 
   const { theme, fontColor } = useTheme();
 
@@ -195,7 +203,6 @@ const FeeCollection = () => {
   const totalPayable =
     totalBilling + Number(fine || 0) - Number(concession || 0);
   const dues = totalPayable - Number(paidAmount || 0);
-
   const handleSave = () => {
     if (!validateForm()) return;
 
@@ -223,10 +230,20 @@ const FeeCollection = () => {
       totalPayable,
       paidAmount: Number(paidAmount),
       duesAmount: dues,
+      student: selectedStudent, // also send student details
     };
 
     console.log('Saved Payload:', payload);
+    setPrintData(payload);
     setSuccessMsg(true);
+    setPrintDialog(true); // open modal
+  };
+
+  const handlePrint = () => {
+    setPrintDialog(false);
+    setTimeout(() => {
+      window.print(); // trigger print
+    }, 500);
   };
   return (
     <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -1080,10 +1097,43 @@ const FeeCollection = () => {
           onClose={() => setSuccessMsg(false)}
           severity='success'
           sx={{ width: '100%' }}
-        >
-          Fee collected successfully!
+        >        Fee collected successfully!
         </Alert>
       </Snackbar>
+
+      {/* Print Dialog */}
+      <Dialog open={printDialog} onClose={() => setPrintDialog(false)}>
+        <DialogTitle>Do you want to Print Receipt?</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Receipt No: <strong>{receiptNumber}</strong>
+          </Typography>
+          <Typography>
+            Student: <strong>{selectedStudent?.studentName}</strong>
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setPrintDialog(false)} color="error">
+            Cancel
+          </Button>
+          <Button onClick={handlePrint} variant="contained" color="primary">
+            OK
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {printData && (
+        <>
+          {theme.printCopyType === "Double Copy" ? (
+            <FeeReceiptTwoCopyPrintView
+              data={printData}
+              fontColor={fontColor}
+            />
+          ) : (
+            <FeeReceiptPrintView data={printData} fontColor={fontColor} />
+          )}
+        </>
+      )}
     </Box>
   );
 };

@@ -34,6 +34,13 @@ export const studentApi = {
   },
 
   /**
+   * Get all student list (comprehensive)
+   */
+  async getAllStudentList(params = {}) {
+    return apiService.call(API_ENDPOINTS.STUDENTS.GET_ALL_STUDENT_LIST, params);
+  },
+
+  /**
    * Get specific student details
    */
   async getStudentDetails(studentId) {

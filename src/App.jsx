@@ -9,6 +9,8 @@ import {
 } from 'react-router-dom';
 
 import { customHistory } from './history'; // ✅ custom history
+import { initializeSchoolConfiguration } from './utils/schoolBaseUrls'; // ✅ Dynamic school config
+import DebugHelper from './utils/debugHelper'; // ✅ Debug helper
 import Navbar from './components/layout/Navbar';
 import Sidebar from './components/layout/Sidebar';
 import Dashboard from './components/dashboards/Dashboard';
@@ -55,6 +57,8 @@ import AddSubject from './components/academic/exam/AddSubject';
 import AddSubjectWiseMarks from './components/academic/exam/AddSubjectWiseMarks';
 import FeeCollection from './components/financial/collection/FeeCollection';
 import DuesCollection from './components/financial/collection/DuesCollection';
+import PrintFeeConfig from './components/financial/collection/PrintFeeConfig';
+import CancelFeeCollection from './components/financial/collection/CancelFeeCollection';
 
 // Authentication Context
 const AuthContext = createContext();
@@ -198,6 +202,26 @@ function App() {
 
   // Initial auth check on app mount (no clearing of valid sessions)
   useEffect(() => {
+    const initializeApp = async () => {      // Initialize dynamic school configuration
+      try {
+        await initializeSchoolConfiguration();
+        console.log('✅ School configuration initialized');
+        
+        // Log debug information in development
+        if (import.meta.env.MODE === 'development') {
+          setTimeout(() => {
+            DebugHelper.logCurrentConfiguration();
+            console.log('💡 Use window.debugERP() to see debug info anytime');
+            console.log('💡 Use window.setSchoolCode("T36") to change school code');
+          }, 1000);
+        }
+      } catch (error) {
+        console.warn('⚠️ Failed to initialize school configuration:', error.message);
+      }
+    };
+
+    initializeApp();
+
     const checkLogin = async () => {
       // First check if we have a valid session token
       const token = sessionStorage.getItem('token');
@@ -369,14 +393,21 @@ function App() {
             <Route
               path='/configuration/main'
               element={<ProtectedRoute element={<MainConfig />} />}
-            />
-            <Route
+            />            <Route
               path='/configuration/header'
               element={<ProtectedRoute element={<HeaderConfig />} />}
             />
             <Route
               path='/configuration/print-header'
               element={<ProtectedRoute element={<PrintHeaderConfig />} />}
+            />
+            <Route
+              path='/configuration/print-fee'
+              element={<ProtectedRoute element={<PrintFeeConfig />} />}
+            />
+            <Route
+              path='/cancel-fee-collection'
+              element={<ProtectedRoute element={<CancelFeeCollection />} />}
             />
             <Route
               path='/configuration/print-header'
