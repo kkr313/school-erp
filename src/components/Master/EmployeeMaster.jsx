@@ -34,7 +34,7 @@ const EmployeeMaster = () => {
     id: 1,
     name: '',
     fatherName: '',
-    gender: null, // ✅ अब object रहेगा (label, value)
+    gender: null, 
     dob: '',
     mobile: '',
     department: null,

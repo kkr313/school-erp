@@ -10,7 +10,6 @@ import {
 
 import { customHistory } from './history'; // ✅ custom history
 import { initializeSchoolConfiguration } from './utils/schoolBaseUrls'; // ✅ Dynamic school config
-import DebugHelper from './utils/debugHelper'; // ✅ Debug helper
 import Navbar from './components/layout/Navbar';
 import Sidebar from './components/layout/Sidebar';
 import Dashboard from './components/dashboards/Dashboard';
@@ -27,7 +26,7 @@ import Expense from './components/financial/expense/ExpenseForm';
 import ClassMaster from './components/master/ClassMaster';
 import FeeHeadMaster from './components/master/FeeHeadMaster';
 import TransportMaster from './components/master/TransportMaster';
-import EmployeeMaster from './components/master/EmployeeMaster';
+import EmployeeMaster from './components/Master/EmployeeMaster';
 import ThemeConfig from './components/dashboards/MainConfig';
 import { useTheme } from './context/ThemeContext';
 import ConfigurationDashboard from './components/dashboards/ConfigurationDashboard';
