@@ -1,5 +1,5 @@
 // src/hooks/usePrompt.js
-import { useCallback, useContext, useEffect } from 'react';
+import { useContext, useEffect } from 'react';
 import { UNSAFE_NavigationContext as NavigationContext } from 'react-router-dom';
 
 export function usePrompt(message, when) {

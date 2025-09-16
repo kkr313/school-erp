@@ -205,18 +205,6 @@ const SchoolMaster = () => {
     setConfirmSave(false);
   };
 
-  const textFieldStyles = {
-    '& .MuiOutlinedInput-root': {
-      '& fieldset': { borderColor: fontColor.paper },
-      '&:hover fieldset': { borderColor: fontColor.paper },
-      '&.Mui-focused fieldset': { borderColor: fontColor.paper },
-    },
-    '& .MuiInputLabel-root': { color: fontColor.paper },
-    '& .MuiFormHelperText-root': { color: fontColor.paper },
-    input: { color: fontColor.paper },
-    textarea: { color: fontColor.paper },
-  };
-
   return (
     <Box
       sx={{

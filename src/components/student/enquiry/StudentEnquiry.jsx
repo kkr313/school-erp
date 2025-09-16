@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   TextField,
   Button,
@@ -46,16 +46,6 @@ const StudentEnquiry = () => {
 
   const genderOptions = ['Male', 'Female', 'Other'];
   const today = new Date().toISOString().split('T')[0];
-
-  const textFieldStyles = {
-    '& .MuiOutlinedInput-root': {
-      '& fieldset': { borderColor: fontColor.paper },
-      '&:hover fieldset': { borderColor: fontColor.paper },
-      '&.Mui-focused fieldset': { borderColor: fontColor.paper },
-    },
-    '& .MuiInputLabel-root': { color: fontColor.paper },
-    '& .MuiFormHelperText-root': { color: fontColor.paper },
-  };
 
   const isDirty = !!(
     doe ||

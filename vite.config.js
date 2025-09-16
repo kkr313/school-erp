@@ -3,8 +3,24 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
-// https://vite.dev/config/
 export default defineConfig({
+  build: {
+    sourcemap: false, // Disable source maps in production
+  },
+  css: {
+    devSourcemap: false, // Disable CSS source maps in development
+  },
+  esbuild: {
+    sourcemap: false, // Disable JavaScript source maps in development
+  },
+  server: {
+    host: '0.0.0.0',  
+    port: 5173,
+    hmr: false, // Disable Hot Module Replacement to force bundling
+  },
+  optimizeDeps: {
+    force: true, // Force pre-bundling of dependencies
+  },
   plugins: [
     tailwindcss(), 
     react(),
@@ -45,8 +61,4 @@ export default defineConfig({
       }
     })
   ],
-  server: {
-    host: '0.0.0.0',  // 👈 allows access from mobile or any network device
-    port: 5173        // 👈 optional, can be omitted if default
-  }
 });

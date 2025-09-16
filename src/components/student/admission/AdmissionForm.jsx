@@ -1,5 +1,4 @@
 import React, {
-  useEffect,
   useState,
   useRef,
   useCallback,
@@ -74,17 +73,6 @@ const Admission = () => {
 
   const [showAdditionalDetails, setShowAdditionalDetails] = useState(false);
   const [showParentDetails, setShowParentDetails] = useState(false);
-
-  const textFieldStyles = {
-    '& .MuiOutlinedInput-root': {
-      '& fieldset': { borderColor: fontColor.paper },
-      '&:hover fieldset': { borderColor: fontColor.paper },
-      '&.Mui-focused fieldset': { borderColor: fontColor.paper },
-    },
-    '& .MuiInputLabel-root': { color: fontColor.paper },
-    '& .MuiFormHelperText-root': { color: fontColor.paper },
-    input: { color: fontColor.paper },
-  };
 
   const isDirty = !!(
     dateOfAdmission ||

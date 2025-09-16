@@ -18,11 +18,11 @@ import {
   Paper,
 } from '@mui/material';
 import ExpenseItems from '../../ui/forms/dropdown/ExpenseItems';
+import { getBaseUrlBySchoolCode } from '../../../utils/schoolBaseUrls';
 import EmployeeList from '../../ui/forms/dropdown/EmployeeList';
 import { useTheme } from '../../../context/ThemeContext';
 import { usePrompt } from '../../../hooks/usePrompt';
 import { useBeforeUnload } from '../../../hooks/useBeforeUnload';
-import { getBaseUrlBySchoolCode } from '../../../utils/schoolBaseUrls';
 import FilledTextField from '../../../utils/FilledTextField';
 import CustomBreadcrumb from '../../ui/navigation/CustomBreadcrumb';
 
@@ -108,6 +108,9 @@ const Expense = () => {
         itemId: 0,
         expensesBy: 0,
       };
+
+      const schoolCode = sessionStorage.getItem('schoolCode');
+      const baseUrl = getBaseUrlBySchoolCode(schoolCode);
 
       const response = await fetch(`${baseUrl}/api/Expense/GetFilterExpenses`, {
         method: 'POST',
@@ -199,16 +202,6 @@ const Expense = () => {
       description: '',
       expenseBy: null,
     });
-  };
-
-  const textFieldStyles = {
-    '& .MuiOutlinedInput-root': {
-      '& fieldset': { borderColor: fontColor.paper },
-      '&:hover fieldset': { borderColor: fontColor.paper },
-      '&.Mui-focused fieldset': { borderColor: fontColor.paper },
-    },
-    '& .MuiInputLabel-root': { color: fontColor.paper },
-    '& .MuiFormHelperText-root': { color: fontColor.paper },
   };
 
   return (

@@ -209,9 +209,8 @@ function App() {
         // Log debug information in development
         if (import.meta.env.MODE === 'development') {
           setTimeout(() => {
-            DebugHelper.logCurrentConfiguration();
-            console.log('💡 Use window.debugERP() to see debug info anytime');
-            console.log('💡 Use window.setSchoolCode("T36") to change school code');
+            console.log('💡 School configuration loaded for development');
+            console.log('💡 Current school code:', sessionStorage.getItem('schoolCode'));
           }, 1000);
         }
       } catch (error) {

@@ -3,17 +3,14 @@ import { Snackbar, Alert, Box, Typography } from '@mui/material';
 import { WifiOff, Wifi } from '@mui/icons-material';
 
 const OfflineNotification = () => {
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [showOfflineMessage, setShowOfflineMessage] = useState(false);
 
   useEffect(() => {
     const handleOnline = () => {
-      setIsOnline(true);
       setShowOfflineMessage(false);
     };
 
     const handleOffline = () => {
-      setIsOnline(false);
       setShowOfflineMessage(true);
     };
 

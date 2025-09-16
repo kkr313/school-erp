@@ -50,17 +50,6 @@ const TransportMaster = () => {
     localStorage.setItem('transportRoutes', JSON.stringify(routes));
   }, [routes]);
 
-  const textFieldStyles = {
-    '& .MuiOutlinedInput-root': {
-      '& fieldset': { borderColor: fontColor.paper },
-      '&:hover fieldset': { borderColor: fontColor.paper },
-      '&.Mui-focused fieldset': { borderColor: fontColor.paper },
-    },
-    '& .MuiInputLabel-root': { color: fontColor.paper },
-    '& .MuiFormHelperText-root': { color: fontColor.paper },
-    input: { color: fontColor.paper },
-  };
-
   const resetForm = () => {
     setRouteName('');
     setRouteStop('');
